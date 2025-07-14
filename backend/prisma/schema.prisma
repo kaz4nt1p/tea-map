@@ -1,0 +1,177 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User model for authentication and profiles
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password_hash String
+  username      String    @unique
+  display_name  String?
+  bio           String?
+  avatar_url    String?
+  is_verified   Boolean   @default(false)
+  privacy_level String    @default("public") // public, friends, private
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+
+  // Relations
+  activities          Activity[]
+  spots               Spot[]
+  media               Media[]
+  activity_comments   ActivityComment[]
+  activity_likes      ActivityLike[]
+  notifications       Notification[]
+  
+  // Social relationships
+  followers           Follow[] @relation("UserFollowers")
+  following           Follow[] @relation("UserFollowing")
+
+  @@map("users")
+}
+
+// Tea activity sessions (Strava-style)
+model Activity {
+  id                String    @id @default(cuid())
+  user_id           String
+  spot_id           String?
+  title             String
+  description       String?
+  tea_type          String?
+  tea_details       Json?     // brewing parameters, temperature, etc.
+  mood_before       String?
+  mood_after        String?
+  taste_notes       String?
+  insights          String?
+  duration_minutes  Int?
+  weather_conditions String?
+  companions        Json?     // array of companion names or user IDs
+  privacy_level     String    @default("public") // public, friends, private
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  // Relations
+  user              User                @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  spot              Spot?               @relation(fields: [spot_id], references: [id], onDelete: SetNull)
+  media             Media[]
+  comments          ActivityComment[]
+  likes             ActivityLike[]
+
+  @@map("activities")
+}
+
+// Enhanced spots with social features
+model Spot {
+  id                String    @id @default(cuid())
+  creator_id        String
+  name              String
+  description       String?
+  long_description  String?
+  latitude          Float
+  longitude         Float
+  address           String?
+  amenities         Json?     // wifi, parking, restrooms, etc.
+  accessibility_info String?
+  image_url         String?
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+
+  // Relations
+  creator           User        @relation(fields: [creator_id], references: [id], onDelete: Cascade)
+  activities        Activity[]
+  media             Media[]
+
+  @@map("spots")
+}
+
+// Social following relationships
+model Follow {
+  follower_id   String
+  following_id  String
+  created_at    DateTime @default(now())
+
+  // Relations
+  follower      User     @relation("UserFollowers", fields: [follower_id], references: [id], onDelete: Cascade)
+  following     User     @relation("UserFollowing", fields: [following_id], references: [id], onDelete: Cascade)
+
+  @@id([follower_id, following_id])
+  @@map("follows")
+}
+
+// Media attachments for activities and spots
+model Media {
+  id          String    @id @default(cuid())
+  user_id     String
+  activity_id String?
+  spot_id     String?
+  file_path   String
+  file_type   String    // image, video
+  file_size   Int
+  alt_text    String?
+  created_at  DateTime  @default(now())
+
+  // Relations
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  activity    Activity? @relation(fields: [activity_id], references: [id], onDelete: Cascade)
+  spot        Spot?     @relation(fields: [spot_id], references: [id], onDelete: Cascade)
+
+  @@map("media")
+}
+
+// Comments on activities
+model ActivityComment {
+  id          String    @id @default(cuid())
+  activity_id String
+  user_id     String
+  content     String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+
+  // Relations
+  activity    Activity  @relation(fields: [activity_id], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("activity_comments")
+}
+
+// Likes on activities
+model ActivityLike {
+  id          String    @id @default(cuid())
+  activity_id String
+  user_id     String
+  created_at  DateTime  @default(now())
+
+  // Relations
+  activity    Activity  @relation(fields: [activity_id], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([activity_id, user_id])
+  @@map("activity_likes")
+}
+
+// Notification system
+model Notification {
+  id         String    @id @default(cuid())
+  user_id    String
+  type       String    // follow, like, comment, new_activity, etc.
+  title      String
+  message    String
+  data       Json?     // additional data for the notification
+  read_at    DateTime?
+  created_at DateTime  @default(now())
+
+  // Relations
+  user       User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
