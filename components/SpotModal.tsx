@@ -1,3 +1,5 @@
+import { Spot } from '../lib/spots';
+
 export default function SpotModal({
   spot,
   onClose,

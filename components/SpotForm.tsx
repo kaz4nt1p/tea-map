@@ -30,28 +30,73 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
         )}
         <input
           type="text"
-          placeholder="Название"
+          placeholder="Название (обязательно)"
           value={name}
           onChange={e => setName(e.target.value)}
           required
-          style={{ width: '100%', marginBottom: 10 }}
+          style={{ 
+            width: '100%', 
+            marginBottom: 10, 
+            padding: '8px', 
+            borderRadius: '4px', 
+            border: '1px solid #ddd' 
+          }}
         />
         <input
           type="text"
           placeholder="Краткое описание"
           value={description}
           onChange={e => setDescription(e.target.value)}
-          style={{ width: '100%', marginBottom: 10 }}
+          style={{ 
+            width: '100%', 
+            marginBottom: 10, 
+            padding: '8px', 
+            borderRadius: '4px', 
+            border: '1px solid #ddd' 
+          }}
         />
         <textarea
           placeholder="Длинное описание"
           value={longDescription}
           onChange={e => setLongDescription(e.target.value)}
-          style={{ width: '100%', marginBottom: 10 }}
+          rows={3}
+          style={{ 
+            width: '100%', 
+            marginBottom: 10, 
+            padding: '8px', 
+            borderRadius: '4px', 
+            border: '1px solid #ddd',
+            resize: 'vertical'
+          }}
         />
         <div style={{ display: 'flex', gap: 10 }}>
-          <button type="submit">Добавить</button>
-          <button type="button" onClick={onCancel}>Отмена</button>
+          <button 
+            type="submit" 
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#388e3c',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Добавить
+          </button>
+          <button 
+            type="button" 
+            onClick={onCancel}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#ccc',
+              color: 'black',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer'
+            }}
+          >
+            Отмена
+          </button>
         </div>
       </form>
     </div>

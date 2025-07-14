@@ -7,7 +7,7 @@ export type Spot = {
   image: string;
   lat: number;
   lng: number;
-  created_at?: string;      // Supabase вернёт этот timestamp
+  created_at?: string;      // SQLite timestamp
 };
 
 export const spots: Spot[] = [
