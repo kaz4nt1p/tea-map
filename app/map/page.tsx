@@ -58,7 +58,7 @@ export default function MapPage() {
   };
 
   return (
-    <div style={{ width: '100vw', height: '100vh', position: 'relative' }}>
+    <div className="w-screen h-screen relative">
       <ClientMap
         spots={spots}
         onMarkerClick={handleMarkerClick}
@@ -68,14 +68,14 @@ export default function MapPage() {
         <SpotModal spot={selectedSpot} onClose={() => setSelectedSpot(null)} />
       )}
       {formCoords && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <SpotForm
             lat={formCoords.lat}
             lng={formCoords.lng}
             onSubmit={handleFormSubmit}
             onCancel={() => setFormCoords(null)}
           />
-          {loading && <div style={{ position: 'absolute', top: 20, right: 20, color: '#333' }}>Сохраняем...</div>}
+          {loading && <div className="absolute top-5 right-5 text-gray-700">Сохраняем...</div>}
         </div>
       )}
     </div>

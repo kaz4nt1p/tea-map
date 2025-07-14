@@ -1,25 +1,26 @@
 "use client";
 import { useState, useRef } from "react";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function SpotImageUploader({ onUpload }: { onUpload: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
-  const [imageUrl, setImageUrl] = useState('');
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      alert('Пожалуйста, выберите изображение');
+      toast.error('Пожалуйста, выберите изображение');
       return;
     }
 
     if (file.size > 4 * 1024 * 1024) {
-      alert('Файл слишком большой. Максимальный размер: 4MB');
+      toast.error('Файл слишком большой. Максимальный размер: 4MB');
       return;
     }
 
     setUploading(true);
-    try {
+    const uploadPromise = async () => {
       const formData = new FormData();
       formData.append('file', file);
 
@@ -35,8 +36,17 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
 
       const data = await response.json();
       onUpload(data.url);
+      return data;
+    };
+
+    try {
+      await toast.promise(uploadPromise(), {
+        loading: 'Загрузка изображения...',
+        success: 'Изображение успешно загружено!',
+        error: ('Ошибка загрузки изображения'),
+      });
     } catch (error: any) {
-      alert(`Ошибка загрузки: ${error.message}`);
+      // Error already handled by toast.promise
     } finally {
       setUploading(false);
     }
@@ -69,99 +79,68 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
     }
   };
 
-  const handleUrlSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (imageUrl.trim()) {
-      onUpload(imageUrl.trim());
-      setImageUrl('');
-    }
-  };
 
   return (
-    <div style={{ marginBottom: 16 }}>
-      <div style={{ marginBottom: 10 }}>
-        <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>
-          Загрузить изображение:
-        </p>
-        
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          style={{
-            border: `2px dashed ${dragActive ? '#388e3c' : '#ddd'}`,
-            borderRadius: '8px',
-            padding: '20px',
-            textAlign: 'center',
-            cursor: 'pointer',
-            backgroundColor: dragActive ? '#f0f8f0' : '#f9f9f9',
-            transition: 'all 0.2s ease'
-          }}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileSelect}
-            style={{ display: 'none' }}
-          />
-          
-          {uploading ? (
-            <div style={{ color: '#388e3c', fontSize: '14px' }}>
-              Загрузка...
-            </div>
-          ) : (
-            <div>
-              <div style={{ fontSize: '16px', marginBottom: '8px' }}>📷</div>
-              <div style={{ fontSize: '14px', color: '#666' }}>
-                Нажмите или перетащите изображение сюда
-              </div>
-              <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
-                JPEG, PNG, GIF, WebP (максимум 4MB)
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
+    <div className="mb-4">
+      <label className="block text-sm font-medium text-tea-700 mb-2">
+        Фото спота
+      </label>
       
-      {/* Remove the block below: manual URL input and form */}
-      {/*
-      <div style={{ borderTop: '1px solid #eee', paddingTop: 10 }}>
-        <p style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>
-          Или введите URL изображения:
-        </p>
-        <form onSubmit={handleUrlSubmit} style={{ display: 'flex', gap: 8 }}>
-          <input
-            type="url"
-            placeholder="https://example.com/image.jpg"
-            value={imageUrl}
-            onChange={e => setImageUrl(e.target.value)}
-            style={{ 
-              flex: 1, 
-              padding: '6px', 
-              border: '1px solid #ddd', 
-              borderRadius: '4px',
-              fontSize: '14px'
-            }}
-          />
-          <button
-            type="submit"
-            style={{
-              padding: '6px 12px',
-              backgroundColor: '#388e3c',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
+      <motion.div
+        whileHover={{ scale: uploading ? 1 : 1.02 }}
+        whileTap={{ scale: uploading ? 1 : 0.98 }}
+        className={`
+          relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200
+          ${dragActive 
+            ? 'border-tea-500 bg-tea-50' 
+            : 'border-tea-300 bg-tea-25 hover:border-tea-400 hover:bg-tea-50'
+          }
+          ${uploading ? 'cursor-not-allowed opacity-70' : ''}
+        `}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={() => !uploading && fileInputRef.current?.click()}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if ((e.key === 'Enter' || e.key === ' ') && !uploading) {
+            e.preventDefault();
+            fileInputRef.current?.click();
+          }
+        }}
+        aria-label="Загрузить изображение"
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+          disabled={uploading}
+        />
+        
+        {uploading ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center"
           >
-            Добавить
-          </button>
-        </form>
-      </div>
-      */}
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tea-500 mb-2"></div>
+            <p className="text-tea-600 font-medium">Загрузка...</p>
+          </motion.div>
+        ) : (
+          <div className="flex flex-col items-center">
+            <div className="text-3xl mb-2">📷</div>
+            <p className="text-tea-700 font-medium mb-1">
+              Нажмите или перетащите фото
+            </p>
+            <p className="text-sm text-tea-500">
+              JPEG, PNG, GIF, WebP (макс. 4MB)
+            </p>
+          </div>
+        )}
+      </motion.div>
     </div>
   );
 }

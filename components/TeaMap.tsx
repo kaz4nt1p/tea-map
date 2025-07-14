@@ -14,6 +14,7 @@ export default function TeaMap() {
   const mapRef = useRef(null);
 
   useEffect(() => {
+    if (!mapRef.current) return;
     const map = L.map(mapRef.current).setView([14.0583, 108.2772], 10);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -35,12 +36,12 @@ export default function TeaMap() {
       {
         name: 'Сосновый склон',
         description: 'Чай с видом на горы и хвойный аромат.',
-        coords: [14.0583, 108.2772],
+        coords: [14.0583, 108.2772] as [number, number],
       },
       {
         name: 'Озёрная поляна',
         description: 'Идеально для улунов на закате.',
-        coords: [30.1, 108.3],
+        coords: [30.1, 108.3] as [number, number],
       },
     ];
 
@@ -50,7 +51,9 @@ export default function TeaMap() {
         .bindPopup(`<b>${spot.name}</b><br>${spot.description}`);
     });
 
-    return () => map.remove();
+    return () => {
+      map.remove();
+    };
   }, []);
 
   return <div id="map" ref={mapRef} style={{ height: '100vh' }} />;
