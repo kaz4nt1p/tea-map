@@ -2,9 +2,11 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
+const passport = require('./auth/google');
 const { PrismaClient } = require('./generated/prisma');
 const { globalErrorHandler } = require('./utils/errors');
 const authRoutes = require('./routes/auth');
+const googleAuthRoutes = require('./routes/google-auth');
 const spotRoutes = require('./routes/spots');
 const activityRoutes = require('./routes/activities');
 require('dotenv').config();
@@ -23,8 +25,12 @@ app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
+// Initialize Passport
+app.use(passport.initialize());
+
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', googleAuthRoutes);
 app.use('/api/spots', spotRoutes);
 app.use('/api/activities', activityRoutes);
 

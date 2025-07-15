@@ -15,13 +15,18 @@ datasource db {
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
-  password_hash String
+  password_hash String?   // Optional for Google OAuth users
   username      String    @unique
   display_name  String?
   bio           String?
   avatar_url    String?
   is_verified   Boolean   @default(false)
   privacy_level String    @default("public") // public, friends, private
+  
+  // OAuth fields
+  google_id     String?   @unique // Google OAuth user ID
+  auth_provider String    @default("local") // local, google, etc.
+  
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
 
