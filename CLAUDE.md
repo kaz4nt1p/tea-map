@@ -125,15 +125,21 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 
 **Current Status**: Backend API server running on `http://localhost:3002`
 **Database**: PostgreSQL with comprehensive schema for social tea platform
-**Next Phase**: JWT authentication system and frontend integration
+**Authentication**: Google OAuth and JWT authentication system implemented
+**Next Phase**: Activity recording system and social features
 
-### Phase 3 Milestones (Social Tea Activity System) - NEXT PHASE
-1. **JWT Authentication System**
-   - [ ] JWT token generation and validation
-   - [ ] User registration endpoint
-   - [ ] User login endpoint
-   - [ ] Password hashing with bcrypt
-   - [ ] Refresh token mechanism
+### Phase 3 Milestones (Social Tea Activity System) - IN PROGRESS
+1. **JWT Authentication System** ✅ COMPLETED
+   - [x] JWT token generation and validation
+   - [x] User registration endpoint
+   - [x] User login endpoint
+   - [x] Password hashing with bcrypt
+   - [x] Refresh token mechanism
+   - [x] Google OAuth integration
+   - [x] Session management with Passport
+   - [x] Frontend authentication context
+   - [x] Authentication state persistence
+   - [x] Protected routes and redirects
 
 2. **Activity Recording System**
    - [ ] Activity creation API endpoints
@@ -147,10 +153,15 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
    - [ ] User activity feeds
    - [ ] Privacy controls
 
-4. **Frontend Integration**
-   - [ ] Update Next.js to consume backend API
-   - [ ] Replace SQLite calls with API calls
-   - [ ] Add authentication UI components
+4. **Frontend Integration** ✅ COMPLETED
+   - [x] Update Next.js to consume backend API
+   - [x] Replace SQLite calls with API calls
+   - [x] Add authentication UI components
+   - [x] Implement Google OAuth sign-in
+   - [x] Add JWT token management
+   - [x] Create authentication context and hooks
+   - [x] Add protected route components
+   - [x] Implement user menu and profile management
    - [ ] Implement activity recording interface
 
 5. **File Upload Service**
@@ -222,7 +233,31 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - **API Pagination**: Limit response sizes
 - **Background Jobs**: Async processing for heavy tasks
 
-## Current Project Structure (Phase 2 Complete)
+## Recent Updates (Phase 3 Authentication - Complete)
+
+### Google OAuth Authentication Implementation ✅ COMPLETED
+- **Google OAuth Strategy**: Implemented with Passport.js for secure authentication
+- **JWT Token Management**: Access and refresh tokens with proper expiration handling
+- **Session Management**: Express-session middleware for Passport state management
+- **Frontend Integration**: React context for authentication state management
+- **User Persistence**: Token storage in sessionStorage, user data in localStorage
+- **Protected Routes**: Automatic redirects for authenticated/unauthenticated users
+- **Error Handling**: Comprehensive OAuth error handling with user-friendly messages
+
+### Authentication Features
+- **Google Sign-In**: One-click authentication with Google accounts
+- **Token Management**: Secure JWT tokens with refresh mechanism
+- **User Profiles**: Automatic user creation and profile management
+- **State Persistence**: Authentication state maintained across browser sessions
+- **Route Protection**: `/auth` page for guests, `/map` for authenticated users
+
+### Technical Implementation
+- **Backend**: Node.js/Express with Passport Google OAuth 2.0 strategy
+- **Frontend**: Next.js 15 with React context and custom hooks
+- **Database**: PostgreSQL with user authentication tables
+- **Security**: JWT tokens, HTTP-only cookies, CORS protection
+
+## Current Project Structure (Phase 3 Authentication Complete)
 
 ### Backend API Server (`/backend/`)
 ```
@@ -254,24 +289,36 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - `GET /api/users` - Get all users with stats
 - `POST /api/test-activity` - Create test tea activity
 
-### Frontend (Next.js) - Legacy Architecture
+#### Authentication Endpoints
+- `POST /api/auth/register` - User registration with email/password
+- `POST /api/auth/login` - User login with email/password
+- `POST /api/auth/refresh` - Refresh JWT access token
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/me` - Get current user profile
+- `GET /api/auth/google` - Initiate Google OAuth login
+- `GET /api/auth/google/callback` - Google OAuth callback handler
 
-This section describes the current Next.js full-stack implementation that will be updated to consume the backend API.
+### Frontend (Next.js) - Updated Architecture ✅ COMPLETED
+
+This section describes the current Next.js implementation that has been updated to consume the backend API with full authentication support.
 
 ### Technology Stack
 
 - **Next.js 15** with App Router (`/app` directory)
 - **TypeScript** for type safety
 - **Leaflet** for interactive maps (client-side only)
-- **SQLite** with better-sqlite3 for local database storage
-- **Local file storage** for image uploads
+- **PostgreSQL** via backend API endpoints
+- **JWT Authentication** with Google OAuth integration
+- **React Context** for authentication state management
+- **Local file storage** for image uploads (legacy - will be migrated)
 
 ### Key Architecture Patterns
 
 1. **Client-Side Map Components**: All Leaflet-related code is in client components (`'use client'`) to avoid SSR issues
-2. **API Routes**: RESTful endpoints in `/app/api/` for spots and file uploads
-3. **Database Integration**: SQLite database with better-sqlite3 for local data storage
-4. **File Upload Flow**: Images uploaded to local storage, file paths stored in SQLite database
+2. **Backend API Integration**: Frontend consumes backend API endpoints instead of direct database access
+3. **Authentication Context**: React context manages authentication state across the application
+4. **Protected Routes**: Custom hooks handle authentication-based routing
+5. **Token Management**: JWT tokens stored in sessionStorage with automatic refresh
 
 ### Data Model
 
