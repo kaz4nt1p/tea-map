@@ -17,6 +17,7 @@
 !app/
 !public/
 !styles/
+!backend/
 
 # Игнорируем всё содержимое public кроме favicon и нужных иконок
 public/*

@@ -1,15 +1,32 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const { PrismaClient } = require('./generated/prisma');
+const { globalErrorHandler } = require('./utils/errors');
+const authRoutes = require('./routes/auth');
+const spotRoutes = require('./routes/spots');
+const activityRoutes = require('./routes/activities');
 require('dotenv').config();
 
 const app = express();
 const prisma = new PrismaClient();
 const PORT = process.env.PORT || 3002;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Security middleware
+app.use(helmet());
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3001',
+  credentials: true
+}));
+app.use(cookieParser());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/spots', spotRoutes);
+app.use('/api/activities', activityRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -17,7 +34,14 @@ app.get('/', (req, res) => {
     message: 'Tea Map Backend API',
     status: 'running',
     database: 'PostgreSQL',
-    version: '1.0.0'
+    version: '1.0.0',
+    authentication: 'JWT with refresh tokens',
+    endpoints: {
+      auth: '/api/auth',
+      spots: '/api/spots',
+      activities: '/api/activities',
+      users: '/api/users'
+    }
   });
 });
 
@@ -41,8 +65,8 @@ app.get('/test-db', async (req, res) => {
   }
 });
 
-// Get all spots (test endpoint)
-app.get('/api/spots', async (req, res) => {
+// Legacy test endpoint - use /api/spots instead
+app.get('/legacy/spots', async (req, res) => {
   try {
     const spots = await prisma.spot.findMany({
       include: {
@@ -158,7 +182,25 @@ app.listen(PORT, () => {
   console.log(`   - GET /api/spots (view migrated spots)`);
   console.log(`   - GET /api/users (view users)`);
   console.log(`   - POST /api/test-activity (create test activity)`);
+  console.log(`🔐 Authentication endpoints:`);
+  console.log(`   - POST /api/auth/register (user registration)`);
+  console.log(`   - POST /api/auth/login (user login)`);
+  console.log(`   - POST /api/auth/refresh (refresh token)`);
+  console.log(`   - POST /api/auth/logout (logout)`);
+  console.log(`   - GET /api/auth/me (get user profile)`);
+  console.log(`📍 Spot endpoints:`);
+  console.log(`   - GET /api/spots (get all spots)`);
+  console.log(`   - POST /api/spots (create spot - auth required)`);
+  console.log(`   - GET /api/spots/:id (get spot by ID)`);
+  console.log(`🍵 Activity endpoints:`);
+  console.log(`   - GET /api/activities (get activity feed)`);
+  console.log(`   - POST /api/activities (create activity - auth required)`);
+  console.log(`   - GET /api/activities/:id (get activity by ID)`);
+  console.log(`   - POST /api/activities/:id/like (like/unlike activity - auth required)`);
 });
+
+// Error handling middleware (must be last)
+app.use(globalErrorHandler);
 
 // Graceful shutdown
 process.on('SIGINT', async () => {
