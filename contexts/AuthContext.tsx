@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, AuthResponse, LoginData, RegisterData, authUtils } from '../lib/auth';
+import { User, AuthResponse, LoginData, RegisterData, authUtils, tokenManager, userManager } from '../lib/auth';
 import { authApi } from '../lib/api';
 import toast from 'react-hot-toast';
 
@@ -35,14 +35,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Check for token in URL parameters (Google OAuth redirect)
         const urlParams = new URLSearchParams(window.location.search);
         const tokenFromUrl = urlParams.get('token');
+        const errorFromUrl = urlParams.get('error');
+        
+        // Handle OAuth errors
+        if (errorFromUrl) {
+          console.error('Google OAuth error:', errorFromUrl);
+          let errorMessage = 'Ошибка при входе через Google';
+          
+          switch (errorFromUrl) {
+            case 'google_oauth_failed':
+              errorMessage = 'Ошибка авторизации Google';
+              break;
+            case 'no_user':
+              errorMessage = 'Не удалось получить данные пользователя';
+              break;
+            case 'authentication_failed':
+              errorMessage = 'Ошибка аутентификации';
+              break;
+          }
+          
+          toast.error(errorMessage);
+          
+          // Clean up URL parameters
+          const url = new URL(window.location.href);
+          url.searchParams.delete('error');
+          window.history.replaceState({}, '', url.toString());
+          
+          setIsLoading(false);
+          return;
+        }
         
         if (tokenFromUrl) {
           try {
             // Store the token and get user profile
-            authUtils.setAccessToken(tokenFromUrl);
+            tokenManager.setAccessToken(tokenFromUrl);
+            tokenManager.setTokenType('Bearer');
             const { user: googleUser } = await authApi.getProfile();
             setUser(googleUser);
-            authUtils.updateCurrentUser(googleUser);
+            userManager.setUser(googleUser);
             
             // Clean up URL parameters
             const url = new URL(window.location.href);
@@ -55,7 +85,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           } catch (error) {
             console.error('Google OAuth token processing error:', error);
             toast.error('Ошибка при входе через Google');
-            authUtils.clearTokens();
+            tokenManager.clearTokens();
           }
         }
         

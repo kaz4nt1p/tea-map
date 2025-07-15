@@ -18,10 +18,18 @@ router.get('/google', passport.authenticate('google', {
  * GET /api/auth/google/callback
  */
 router.get('/google/callback', 
-  passport.authenticate('google', { failureRedirect: '/auth?error=google_oauth_failed' }),
+  passport.authenticate('google', { 
+    failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:3001'}/auth?error=google_oauth_failed` 
+  }),
   async (req, res) => {
     try {
       const user = req.user;
+      
+      if (!user) {
+        console.error('Google OAuth: No user returned from authentication');
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+        return res.redirect(`${frontendUrl}/auth?error=no_user`);
+      }
       
       // Generate JWT tokens
       const tokens = generateTokens(user);
@@ -39,7 +47,8 @@ router.get('/google/callback',
       res.redirect(`${frontendUrl}/map?token=${tokens.accessToken}`);
     } catch (error) {
       console.error('Google OAuth callback error:', error);
-      res.redirect('/auth?error=authentication_failed');
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
+      res.redirect(`${frontendUrl}/auth?error=authentication_failed`);
     }
   }
 );
