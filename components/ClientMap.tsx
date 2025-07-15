@@ -72,19 +72,7 @@ function Header({ onRandom }: { onRandom: () => void }) {
         
         {/* Navigation and Actions - Right side */}
         <div className="ml-auto flex items-center gap-3 md:gap-4">
-          {/* Home Button */}
-          <motion.button
-            type="button"
-            onClick={() => router.push('/')}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="hidden md:flex items-center gap-2 px-4 py-2 text-forest-700 hover:text-tea-600 transition-colors"
-            aria-label="Вернуться на главную"
-          >
-            <span>🏠</span>
-            <span className="text-sm font-medium">Главная</span>
-          </motion.button>
+          {/* Space for UserMenu component */}
         </div>
       </div>
       
