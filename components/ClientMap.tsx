@@ -31,7 +31,7 @@ function Header({ onRandom }: { onRandom: () => void }) {
       <div className="absolute inset-0 bg-gradient-to-r from-tea-500/10 via-sage-400/5 to-forest-500/10" />
       
       {/* Content */}
-      <div className="relative flex items-center justify-between h-full px-4 md:px-8">
+      <div className="relative flex items-center h-full px-4 md:px-8">
         {/* Logo and Brand */}
         <motion.div 
           initial={{ x: -30, opacity: 0 }}
@@ -51,8 +51,27 @@ function Header({ onRandom }: { onRandom: () => void }) {
           </div>
         </motion.div>
         
-        {/* Navigation and Actions */}
-        <div className="flex items-center gap-3 md:gap-4">
+        {/* Centered Random Spot Button */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 max-w-xs">
+          <motion.button
+            type="button"
+            onClick={onRandom}
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="bg-gradient-to-r from-tea-500 to-sage-600 text-white border-none rounded-2xl px-4 py-2.5 md:px-6 md:py-3 text-sm md:text-base font-semibold cursor-pointer shadow-lg hover:shadow-xl active:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 backdrop-blur-sm hover:from-tea-600 hover:to-sage-700 group whitespace-nowrap"
+            aria-label="Найти случайный чайный спот"
+          >
+            <span className="flex items-center gap-2">
+              <span className="hidden md:inline">Найти лучший спот</span>
+              <span className="md:hidden">Случайный спот</span>
+              <span className="text-amber-200 group-hover:text-amber-100 transition-colors">🌿</span>
+            </span>
+          </motion.button>
+        </div>
+        
+        {/* Navigation and Actions - Right side */}
+        <div className="ml-auto flex items-center gap-3 md:gap-4">
           {/* Home Button */}
           <motion.button
             type="button"
@@ -65,23 +84,6 @@ function Header({ onRandom }: { onRandom: () => void }) {
           >
             <span>🏠</span>
             <span className="text-sm font-medium">Главная</span>
-          </motion.button>
-          
-          {/* Random Spot Button */}
-          <motion.button
-            type="button"
-            onClick={onRandom}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-gradient-to-r from-tea-500 to-sage-600 text-white border-none rounded-2xl px-5 py-2.5 md:px-8 md:py-3.5 text-sm md:text-base font-semibold cursor-pointer shadow-lg hover:shadow-xl active:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 backdrop-blur-sm hover:from-tea-600 hover:to-sage-700 group"
-            aria-label="Найти случайный чайный спот"
-          >
-            <span className="flex items-center gap-2">
-              <span className="hidden md:inline">Найти лучший спот</span>
-              <span className="md:hidden">Случайный спот</span>
-              <span className="text-amber-200 group-hover:text-amber-100 transition-colors">🌿</span>
-            </span>
           </motion.button>
         </div>
       </div>

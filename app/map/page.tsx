@@ -108,7 +108,7 @@ export default function MapPage() {
   return (
     <div className="w-screen h-screen relative">
       {/* Header with user menu */}
-      <div className="absolute top-4 right-4 z-10">
+      <div className="absolute top-4 right-4 z-30">
         <UserMenu />
       </div>
 
