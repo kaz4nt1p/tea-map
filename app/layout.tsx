@@ -1,6 +1,7 @@
 import './globals.css'
 import ToastProvider from '../components/ToastProvider'
 import { AuthProvider } from '../contexts/AuthContext'
+import Navigation from '../components/Navigation'
 
 export const metadata = {
   title: 'Tea Spot Map',
@@ -14,8 +15,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className="bg-tea-50 text-gray-900 h-full">
+      <body className="bg-gray-50 text-gray-900 h-full">
         <AuthProvider>
+          <Navigation />
           {children}
           <ToastProvider />
         </AuthProvider>

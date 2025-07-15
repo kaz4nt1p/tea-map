@@ -1,14 +1,8 @@
 // lib/spots.ts
-export type Spot = {
-  id: string;               // UUID
-  name: string;
-  description: string;
-  longDescription: string;
-  image: string;
-  lat: number;
-  lng: number;
-  created_at?: string;      // SQLite timestamp
-};
+import { SpotLegacy } from './types';
+
+// Legacy spot type for backward compatibility
+export type Spot = SpotLegacy;
 
 export const spots: Spot[] = [
   {

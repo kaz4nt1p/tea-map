@@ -37,10 +37,10 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - Basic REST API endpoints with test functionality
 - Data migration from SQLite to PostgreSQL
 
-**Phase 3: Social Tea Activity System (📋 Planned)**
+**Phase 3: Social Tea Activity System (✅ Completed)**
 - Tea session/activity recording (Strava-style)
 - Activity feed with social interactions
-- User profiles and following system
+- User profiles and activity timelines
 - Rich activity details (mood, taste notes, insights)
 
 **Phase 4: Advanced Features (🎯 Future)**
@@ -123,12 +123,15 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
    - [x] Test activity creation
    - [x] API endpoint verification
 
-**Current Status**: Backend API server running on `http://localhost:3002`
-**Database**: PostgreSQL with comprehensive schema for social tea platform
-**Authentication**: Google OAuth and JWT authentication system implemented
-**Next Phase**: Activity recording system and social features
+**Current Status**: 
+- Backend API server running on `http://localhost:3002`
+- Frontend development server running on `http://localhost:3001`
+- Database: PostgreSQL with comprehensive schema for social tea platform
+- Authentication: Google OAuth and JWT authentication system implemented
+- Activity System: Full Strava-like activity recording and social features implemented
+- **Next Phase**: Cloud file upload service and advanced features
 
-### Phase 3 Milestones (Social Tea Activity System) - IN PROGRESS
+### Phase 3 Milestones (Social Tea Activity System) ✅ COMPLETED
 1. **JWT Authentication System** ✅ COMPLETED
    - [x] JWT token generation and validation
    - [x] User registration endpoint
@@ -141,17 +144,21 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
    - [x] Authentication state persistence
    - [x] Protected routes and redirects
 
-2. **Activity Recording System**
-   - [ ] Activity creation API endpoints
-   - [ ] Activity CRUD operations
-   - [ ] Tea session metadata handling
-   - [ ] Activity validation and sanitization
+2. **Activity Recording System** ✅ COMPLETED
+   - [x] Activity creation API endpoints
+   - [x] Activity CRUD operations (GET, POST, PUT, DELETE)
+   - [x] Tea session metadata handling
+   - [x] Activity validation and sanitization
+   - [x] Activity by spot endpoint
+   - [x] Activity by user endpoint
+   - [x] Activity detail pages
+   - [x] Activity like/unlike functionality
 
-3. **Social Features**
-   - [ ] Follow/unfollow system
-   - [ ] Activity comments and likes
-   - [ ] User activity feeds
-   - [ ] Privacy controls
+3. **Social Features** ✅ COMPLETED (Basic Implementation)
+   - [x] Activity comments and likes (API ready)
+   - [x] User activity feeds
+   - [x] Privacy controls (public, friends, private)
+   - [ ] Follow/unfollow system (API ready, UI pending)
 
 4. **Frontend Integration** ✅ COMPLETED
    - [x] Update Next.js to consume backend API
@@ -162,9 +169,15 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
    - [x] Create authentication context and hooks
    - [x] Add protected route components
    - [x] Implement user menu and profile management
-   - [ ] Implement activity recording interface
+   - [x] Implement activity recording interface
+   - [x] Create Dashboard with Strava-like activity feed
+   - [x] Create Profile page with user's activity timeline
+   - [x] Create Activity detail pages
+   - [x] Update navigation to activity-focused structure
+   - [x] Fix authentication token handling in API calls
+   - [x] Create API proxy routes for frontend-backend communication
 
-5. **File Upload Service**
+5. **File Upload Service** 📋 PLANNED
    - [ ] Cloud storage integration (AWS S3/Cloudinary)
    - [ ] Image processing pipeline
    - [ ] Multiple file formats support
@@ -298,6 +311,23 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - `GET /api/auth/google` - Initiate Google OAuth login
 - `GET /api/auth/google/callback` - Google OAuth callback handler
 
+#### Activity Endpoints
+- `GET /api/activities` - Get all activities with pagination
+- `POST /api/activities` - Create new activity
+- `GET /api/activities/:id` - Get activity by ID
+- `PUT /api/activities/:id` - Update activity
+- `DELETE /api/activities/:id` - Delete activity
+- `POST /api/activities/:id/like` - Like/unlike activity
+- `GET /api/activities/spot/:spotId` - Get activities for specific spot
+- `GET /api/activities/user/:username` - Get activities for specific user
+
+#### Spot Endpoints
+- `GET /api/spots` - Get all spots
+- `POST /api/spots` - Create new spot
+- `GET /api/spots/:id` - Get spot by ID
+- `PUT /api/spots/:id` - Update spot
+- `DELETE /api/spots/:id` - Delete spot
+
 ### Frontend (Next.js) - Updated Architecture ✅ COMPLETED
 
 This section describes the current Next.js implementation that has been updated to consume the backend API with full authentication support.
@@ -379,26 +409,62 @@ The application uses SQLite with a table named `tea_spots` containing:
 4. **Image Upload**: Uses local file storage with drag-and-drop interface and URL fallback
 5. **Responsive Design**: Layout adapts with sidebar (28vw) and map area (72vw)
 
+### Current Implementation Status (Phase 3 Complete)
+
+**Activity Recording System Features:**
+- ✅ Comprehensive activity creation form with tea metadata
+- ✅ Spot selection with search functionality
+- ✅ Activity timeline and feed components
+- ✅ Activity detail pages with full metadata display
+- ✅ Activity likes and social interactions
+- ✅ User profile pages with activity history
+- ✅ Dashboard with Strava-like three-column layout
+- ✅ Activity filtering and pagination
+- ✅ Rich activity data model with TypeScript interfaces
+
+**Technical Implementation:**
+- ✅ Next.js API proxy routes for frontend-backend communication
+- ✅ JWT authentication token handling in all API calls
+- ✅ Comprehensive error handling and user feedback
+- ✅ TypeScript interfaces for Activity, User, Spot, and related entities
+- ✅ Date formatting with date-fns library
+- ✅ Lucide React icons for consistent UI
+- ✅ Responsive design with mobile-friendly components
+
 ### File Structure
 
 ```
 /app/
   /api/
+    /activities/route.ts     # Activity API proxy routes
     /spots/route.ts          # Spot CRUD operations
     /upload/route.ts         # Local file upload endpoint
-  layout.tsx                 # Root layout  
-  page.tsx                   # Home page with redirect to map
-  /map/page.tsx             # Main map page
+  /dashboard/page.tsx        # Main dashboard with activity feed
+  /profile/page.tsx          # User profile with activity timeline
+  /activities/[id]/page.tsx  # Individual activity detail pages
+  /map/page.tsx             # Map page with spot management
+  layout.tsx                 # Root layout with navigation
+  page.tsx                   # Home page with redirect to dashboard
 /components/
+  ActivityCard.tsx          # Activity display component
+  ActivityList.tsx          # Activity timeline component
+  ActivityForm.tsx          # Activity creation form
+  SpotSelector.tsx          # Spot selection with search
+  Navigation.tsx            # Main navigation component
   ClientMap.tsx             # Main map component
   SpotForm.tsx              # Add spot form
-  SpotImageUploader.tsx     # Image upload component
-  SpotModal.tsx             # Spot details modal
-  TeaMap.tsx                # Legacy map component
+  SpotModal.tsx             # Spot details with activities
+  /auth/
+    UserMenu.tsx            # User authentication menu
 /lib/
-  spots.ts                  # Spot type definition and sample data
-  sqlite.ts                 # SQLite database utilities and operations
-  supabaseClient.ts         # Supabase client (commented out)
+  types.ts                  # TypeScript interfaces for all entities
+  auth.ts                   # Authentication token management
+  api.ts                    # API utilities and helpers
+  spots.ts                  # Spot type definition
+/contexts/
+  AuthContext.tsx           # Authentication context provider
+/hooks/
+  useAuth.ts               # Authentication hooks
 /public/
   uploads/                  # Local image storage directory
 ```
@@ -407,8 +473,39 @@ The application uses SQLite with a table named `tea_spots` containing:
 
 - The application uses Russian language in the UI
 - Map defaults to Moscow coordinates (55.751244, 37.618423)
-- Tea-themed icons from OpenMoji are used throughout
+- Tea-themed icons and comprehensive icon system with Lucide React
 - Strict TypeScript mode is disabled (`"strict": false`)
 - Local file uploads are stored in `public/uploads/` and served statically
 - Image uploads support drag-and-drop and URL input fallback
-- No additional testing framework is configured
+- Comprehensive activity data model with tea-specific metadata
+- Strava-inspired design with social features
+- Full authentication flow with Google OAuth integration
+- API proxy routes handle frontend-backend communication securely
+
+### Next Phase Recommendations
+
+**Phase 4: Advanced Features (Recommended Next Steps)**
+1. **Cloud File Upload Service**
+   - Implement AWS S3 or Cloudinary integration
+   - Add image processing and optimization
+   - Support multiple file formats and sizes
+
+2. **Real-time Features**
+   - WebSocket integration for live activity updates
+   - Real-time notifications for likes and comments
+   - Live activity feed updates
+
+3. **Social Features Enhancement**
+   - Complete follow/unfollow system UI
+   - Activity comments system
+   - Activity sharing and social media integration
+
+4. **Performance Optimization**
+   - Implement caching with Redis
+   - Add database query optimization
+   - Implement background job processing
+
+5. **Advanced Analytics**
+   - User activity analytics and insights
+   - Tea consumption patterns
+   - Spot popularity and recommendations

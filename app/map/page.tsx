@@ -4,8 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import ClientMap from '../../components/ClientMap';
 import SpotModal from '../../components/SpotModal';
 import SpotForm from '../../components/SpotForm';
+import ActivityForm from '../../components/ActivityForm';
 import UserMenu from '../../components/auth/UserMenu';
 import { Spot } from '../../lib/spots';
+import { CreateActivityRequest } from '../../lib/types';
+import { tokenManager } from '../../lib/auth';
 import { useRequireAuth } from '../../hooks/useAuth';
 import { spotsApi, CreateSpotData } from '../../lib/api';
 import toast from 'react-hot-toast';
@@ -16,6 +19,7 @@ export default function MapPage() {
   const [spots, setSpots] = useState<Spot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [formCoords, setFormCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [activitySpot, setActivitySpot] = useState<Spot | null>(null);
   const [loading, setLoading] = useState(false);
   const [spotsLoading, setSpotsLoading] = useState(true);
 
@@ -93,6 +97,40 @@ export default function MapPage() {
     }
   };
 
+  // Handle activity recording
+  const handleRecordActivity = (spot: Spot) => {
+    setActivitySpot(spot);
+    setSelectedSpot(null);
+  };
+
+  // Handle activity form submit
+  const handleActivitySubmit = async (activityData: CreateActivityRequest) => {
+    setLoading(true);
+    try {
+      const token = tokenManager.getAccessToken();
+      const response = await fetch('/api/activities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
+        body: JSON.stringify(activityData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create activity');
+      }
+
+      setActivitySpot(null);
+      toast.success('Чайная сессия записана!');
+    } catch (error) {
+      console.error('Error creating activity:', error);
+      toast.error('Ошибка при создании активности');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Show loading screen while authenticating
   if (authLoading) {
     return (
@@ -129,7 +167,11 @@ export default function MapPage() {
       />
       
       {selectedSpot && (
-        <SpotModal spot={selectedSpot} onClose={() => setSelectedSpot(null)} />
+        <SpotModal 
+          spot={selectedSpot} 
+          onClose={() => setSelectedSpot(null)} 
+          onRecordActivity={handleRecordActivity}
+        />
       )}
       
       {formCoords && (
@@ -142,6 +184,15 @@ export default function MapPage() {
           />
           {loading && <div className="absolute top-5 right-5 text-gray-700">Сохраняем...</div>}
         </div>
+      )}
+      
+      {activitySpot && (
+        <ActivityForm
+          initialSpot={activitySpot}
+          onSubmit={handleActivitySubmit}
+          onCancel={() => setActivitySpot(null)}
+          isLoading={loading}
+        />
       )}
     </div>
   );
