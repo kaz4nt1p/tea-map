@@ -26,7 +26,20 @@ export default function MapPage() {
     try {
       setSpotsLoading(true);
       const { spots: fetchedSpots } = await spotsApi.getSpots();
-      setSpots(fetchedSpots);
+      
+      // Convert backend API data to frontend format
+      const convertedSpots = fetchedSpots.map(spot => ({
+        id: spot.id,
+        name: spot.name,
+        description: spot.description,
+        longDescription: spot.long_description,
+        image: spot.image_url || '',
+        lat: spot.latitude,
+        lng: spot.longitude,
+        created_at: spot.created_at
+      }));
+      
+      setSpots(convertedSpots);
     } catch (error) {
       console.error('Failed to fetch spots:', error);
       toast.error('Не удалось загрузить споты');
