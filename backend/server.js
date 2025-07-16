@@ -10,6 +10,8 @@ const authRoutes = require('./routes/auth');
 const googleAuthRoutes = require('./routes/google-auth');
 const spotRoutes = require('./routes/spots');
 const activityRoutes = require('./routes/activities');
+const userRoutes = require('./routes/users');
+const statsRoutes = require('./routes/stats');
 require('dotenv').config();
 
 const app = express();
@@ -46,6 +48,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/auth', googleAuthRoutes);
 app.use('/api/spots', spotRoutes);
 app.use('/api/activities', activityRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -59,7 +63,8 @@ app.get('/', (req, res) => {
       auth: '/api/auth',
       spots: '/api/spots',
       activities: '/api/activities',
-      users: '/api/users'
+      users: '/api/users',
+      stats: '/api/stats'
     }
   });
 });
