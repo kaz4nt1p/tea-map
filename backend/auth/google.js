@@ -33,7 +33,7 @@ async (accessToken, refreshToken, profile, done) => {
         data: {
           google_id: profile.id,
           auth_provider: 'google',
-          avatar_url: profile.photos[0]?.value || user.avatar_url,
+          avatar_url: profile.photos[0]?.value?.replace('s96-c', 's200-c') || user.avatar_url,
           is_verified: true
         }
       });
@@ -47,7 +47,7 @@ async (accessToken, refreshToken, profile, done) => {
         google_id: profile.id,
         username: profile.emails[0].value.split('@')[0] + '_' + profile.id.slice(-4),
         display_name: profile.displayName,
-        avatar_url: profile.photos[0]?.value,
+        avatar_url: profile.photos[0]?.value?.replace('s96-c', 's200-c'),
         auth_provider: 'google',
         is_verified: true
       }
