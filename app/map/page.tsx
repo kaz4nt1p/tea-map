@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import ClientMap from '../../components/ClientMap';
 import SpotModal from '../../components/SpotModal';
 import SpotForm from '../../components/SpotForm';
@@ -16,6 +17,7 @@ import ForestTeaLogo from '../../components/ForestTeaLogo';
 
 export default function MapPage() {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth();
+  const searchParams = useSearchParams();
   const [spots, setSpots] = useState<Spot[]>([]);
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(null);
   const [formCoords, setFormCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -56,6 +58,19 @@ export default function MapPage() {
   useEffect(() => {
     fetchSpots();
   }, [fetchSpots]);
+
+  // Handle spot query parameter to auto-open spot modal
+  useEffect(() => {
+    const spotId = searchParams.get('spot');
+    if (spotId && spots.length > 0) {
+      const spot = spots.find(s => s.id === spotId);
+      if (spot) {
+        setSelectedSpot(spot);
+        // Clear the query parameter after opening the modal
+        window.history.replaceState({}, '', '/map');
+      }
+    }
+  }, [searchParams, spots]);
 
   // Handle map click to open form
   const handleMapClick = (lat: number, lng: number) => {
@@ -105,9 +120,17 @@ export default function MapPage() {
 
   // Handle activity form submit
   const handleActivitySubmit = async (activityData: CreateActivityRequest) => {
+    if (!isAuthenticated) {
+      toast.error('Необходимо войти в систему для создания активности');
+      return;
+    }
+    
     setLoading(true);
     try {
       const token = tokenManager.getAccessToken();
+      console.log('Token available:', !!token);
+      console.log('Activity data:', activityData);
+      
       const response = await fetch('/api/activities', {
         method: 'POST',
         headers: {
@@ -118,7 +141,9 @@ export default function MapPage() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create activity');
+        const errorText = await response.text();
+        console.error('Activity creation error:', response.status, errorText);
+        throw new Error(`Failed to create activity: ${response.status} - ${errorText}`);
       }
 
       setActivitySpot(null);

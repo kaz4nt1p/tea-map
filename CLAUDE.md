@@ -509,3 +509,8 @@ The application uses SQLite with a table named `tea_spots` containing:
    - User activity analytics and insights
    - Tea consumption patterns
    - Spot popularity and recommendations
+
+## Memory Management
+
+### Project Interactions
+- To memorize a new key interaction, message or code insight about the Tea Map project
