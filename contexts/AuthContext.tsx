@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { useRouter } from 'next/navigation';
 import { User, AuthResponse, LoginData, RegisterData, authUtils, tokenManager, userManager } from '../lib/auth';
 import { authApi } from '../lib/api';
 import toast from 'react-hot-toast';
@@ -25,6 +26,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   const isAuthenticated = !!user && authUtils.isAuthenticated();
 
@@ -169,6 +171,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       
       toast.success('Successfully logged out');
+      
+      // Redirect to login page
+      router.push('/auth');
     } catch (error) {
       // Even if logout API call fails, clear local state
       authUtils.logout();
@@ -176,6 +181,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       console.error('Logout error:', error);
       toast.error('Logout completed');
+      
+      // Redirect to login page even on error
+      router.push('/auth');
     } finally {
       setIsLoading(false);
     }

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
+import { AvatarImage } from '../AvatarImage';
 
 const UserMenu: React.FC = () => {
   const { user, logout, isLoading } = useAuth();
@@ -45,17 +46,12 @@ const UserMenu: React.FC = () => {
         className="flex items-center space-x-2 p-2 rounded-lg hover:bg-tea-50 transition-colors"
         disabled={isLoading}
       >
-        <div className="w-8 h-8 bg-gradient-to-br from-tea-500 to-sage-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-          {user.avatar_url ? (
-            <img
-              src={user.avatar_url}
-              alt={displayName}
-              className="w-full h-full rounded-full object-cover"
-            />
-          ) : (
-            initials
-          )}
-        </div>
+        <AvatarImage
+          src={user.avatar_url}
+          alt={displayName}
+          size="md"
+          fallback={<span className="text-white font-medium text-sm">{initials}</span>}
+        />
         <span className="text-forest-700 font-medium hidden md:block">
           {displayName}
         </span>
@@ -87,17 +83,13 @@ const UserMenu: React.FC = () => {
             <Card className="shadow-xl border-tea-200 bg-white/95 backdrop-blur-md border-2 rounded-xl">
               <CardContent className="p-4">
                 <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-tea-100">
-                  <div className="w-12 h-12 bg-gradient-to-br from-tea-500 to-sage-600 rounded-full flex items-center justify-center text-white text-lg font-medium">
-                    {user.avatar_url ? (
-                      <img
-                        src={user.avatar_url}
-                        alt={displayName}
-                        className="w-full h-full rounded-full object-cover"
-                      />
-                    ) : (
-                      initials
-                    )}
-                  </div>
+                  <AvatarImage
+                    src={user.avatar_url}
+                    alt={displayName}
+                    size="lg"
+                    className="w-12 h-12"
+                    fallback={<span className="text-white font-medium text-lg">{initials}</span>}
+                  />
                   <div>
                     <h3 className="font-medium text-forest-900">{displayName}</h3>
                     <p className="text-sm text-forest-600">@{user.username}</p>
