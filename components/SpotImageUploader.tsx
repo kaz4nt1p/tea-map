@@ -14,8 +14,8 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
       return;
     }
 
-    if (file.size > 4 * 1024 * 1024) {
-      toast.error('Файл слишком большой. Максимальный размер: 4MB');
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Файл слишком большой. Максимальный размер: 10MB');
       return;
     }
 
@@ -36,6 +36,15 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
 
       const data = await response.json();
       onUpload(data.url);
+      
+      // Log additional Cloudinary metadata for debugging
+      if (data.thumbnails) {
+        console.log('Cloudinary thumbnails available:', data.thumbnails);
+      }
+      if (data.publicId) {
+        console.log('Cloudinary public ID:', data.publicId);
+      }
+      
       return data;
     };
 
@@ -136,7 +145,7 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
               Нажмите или перетащите фото
             </p>
             <p className="text-sm text-tea-500">
-              JPEG, PNG, GIF, WebP (макс. 4MB)
+              JPEG, PNG, GIF, WebP (макс. 10MB)
             </p>
           </div>
         )}

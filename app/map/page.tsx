@@ -96,7 +96,8 @@ export default function MapPage() {
         longitude: spotData.lng,
         address: '', // You can add address field to the form later
         amenities: [],
-        accessibility_info: ''
+        accessibility_info: '',
+        image_url: spotData.image || ''
       };
       
       await spotsApi.createSpot(createData);

@@ -12,6 +12,7 @@ const spotRoutes = require('./routes/spots');
 const activityRoutes = require('./routes/activities');
 const userRoutes = require('./routes/users');
 const statsRoutes = require('./routes/stats');
+const uploadRoutes = require('./routes/upload');
 require('dotenv').config();
 
 const app = express();
@@ -50,6 +51,7 @@ app.use('/api/spots', spotRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Test route
 app.get('/', (req, res) => {
@@ -201,6 +203,7 @@ app.post('/api/test-activity', async (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Tea Map Backend running on http://localhost:${PORT}`);
   console.log(`📊 Database: PostgreSQL`);
+  console.log(`☁️  Image Storage: Cloudinary`);
   console.log(`🧪 Test endpoints available:`);
   console.log(`   - GET /test-db (database connection test)`);
   console.log(`   - GET /api/spots (view migrated spots)`);
@@ -221,6 +224,10 @@ app.listen(PORT, () => {
   console.log(`   - POST /api/activities (create activity - auth required)`);
   console.log(`   - GET /api/activities/:id (get activity by ID)`);
   console.log(`   - POST /api/activities/:id/like (like/unlike activity - auth required)`);
+  console.log(`📷 Upload endpoints:`);
+  console.log(`   - POST /api/upload (upload image to Cloudinary)`);
+  console.log(`   - DELETE /api/upload/:publicId (delete image from Cloudinary)`);
+  console.log(`   - GET /api/upload/transform/:publicId (get transformed image URL)`);
 });
 
 // Error handling middleware (must be last)
