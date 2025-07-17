@@ -43,6 +43,14 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - User profiles and activity timelines
 - Rich activity details (mood, taste notes, insights)
 
+**Phase 3.5: UI/UX Enhancements (✅ Completed)**
+- Consistent tea icon design system across all components
+- Custom branded tea cup icons for map markers
+- Fixed profile photo display issues using AvatarImage component
+- Auto-refresh functionality for activity feeds
+- Improved user navigation and profile access
+- Next.js 15 compatibility fixes for async params
+
 **Phase 4: Advanced Features (🎯 Future)**
 - Real-time WebSocket connections
 - Push notification system
@@ -54,6 +62,26 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - Offline sync capabilities
 - Native camera integration
 - Push notifications
+
+## Recent Improvements (January 2025)
+
+### Tea Icon Design System
+- **Components**: `TeaIcon.tsx`, `TeaMarkerIcon.tsx`
+- **Variants**: filled, outlined, marker (with decorative leaves)
+- **Colors**: Consistent with ForestTeaLogo brand colors
+- **Usage**: Map markers, navigation, activity cards
+
+### Profile & Navigation Fixes
+- **Profile Photos**: Fixed using AvatarImage component on activity detail pages
+- **Profile Navigation**: Fixed profile button in user dropdown menu
+- **Auto-refresh**: Activity feed refreshes after creating new activities
+- **Next.js 15**: All API routes updated for async params compatibility
+
+### Technical Improvements
+- **Map Markers**: Custom tea cup icons replace OpenMoji leaf icons
+- **Icon Consistency**: All tea-related UI elements use unified design
+- **Component Reusability**: Modular icon system with multiple variants
+- **Performance**: Optimized SVG rendering for map compatibility
 
 ## Memory Management
 
