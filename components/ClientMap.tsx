@@ -7,6 +7,7 @@ import { clsx } from 'clsx';
 import { Spot } from '../lib/spots';
 import ForestTeaLogo from './ForestTeaLogo';
 import { useRouter } from 'next/navigation';
+import { createTeaMarkerDataURL, createTeaEmojiMarkerDataURL, createSimpleTeaMarkerDataURL } from './TeaMarkerIcon';
 
 type ClientMapProps = {
   spots: Spot[];
@@ -191,10 +192,10 @@ export default function ClientMap({
     (async () => {
       leaflet = await import('leaflet');
       teaIcon = leaflet.icon({
-        iconUrl: 'https://openmoji.org/data/color/svg/1F33F.svg',
+        iconUrl: createSimpleTeaMarkerDataURL(48),
         iconSize: [48, 48],
-        iconAnchor: [24, 48],
-        popupAnchor: [0, -48],
+        iconAnchor: [24, 24],
+        popupAnchor: [0, -24],
       });
       const initialCenter: [number, number] = [55.7522, 37.6156];
       const initialZoom = 13;
@@ -271,10 +272,10 @@ export default function ClientMap({
     (async () => {
       leaflet = await import('leaflet');
       teaIcon = leaflet.icon({
-        iconUrl: 'https://openmoji.org/data/color/svg/1F33F.svg',
+        iconUrl: createSimpleTeaMarkerDataURL(48),
         iconSize: [48, 48],
-        iconAnchor: [24, 48],
-        popupAnchor: [0, -48],
+        iconAnchor: [24, 24],
+        popupAnchor: [0, -24],
       });
       if (!mapRef.current) return;
       // Удаляем старые маркеры

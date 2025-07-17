@@ -61,3 +61,4 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - To memorize a new key interaction, message or code insight about the Tea Map project
 - **New Memory**: To memorize
 - Something to memorize
+- To memorize

@@ -6,11 +6,13 @@ import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 import { AvatarImage } from '../AvatarImage';
+import { useRouter } from 'next/navigation';
 
 const UserMenu: React.FC = () => {
   const { user, logout, isLoading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -27,6 +29,11 @@ const UserMenu: React.FC = () => {
   const handleLogout = async () => {
     setIsOpen(false);
     await logout();
+  };
+
+  const handleProfileClick = () => {
+    setIsOpen(false);
+    router.push('/profile');
   };
 
   if (!user) return null;
@@ -126,7 +133,7 @@ const UserMenu: React.FC = () => {
                   <Button
                     variant="outline"
                     className="w-full justify-start text-forest-700 border-tea-200 bg-white hover:bg-tea-50"
-                    onClick={() => setIsOpen(false)}
+                    onClick={handleProfileClick}
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
