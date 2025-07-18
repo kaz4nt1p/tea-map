@@ -51,15 +51,24 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - Improved user navigation and profile access
 - Next.js 15 compatibility fixes for async params
 
+**Phase 3.6: Search & Statistics Features (✅ Completed)**
+- Server-side spot search with text filtering
+- Enhanced SpotSelector with always-visible "Create new spot" button
+- Proper spot creation flow requiring map click first
+- Clickable popular spots on dashboard
+- Real-time community statistics (active users, sessions today, new spots)
+- API proxy system for frontend-backend communication
+- Next.js router navigation for better UX
+- Suspense boundaries for Next.js 15 compatibility
+
 **Phase 4: Advanced Features (🎯 Future)**
 - Real-time WebSocket connections
 - Push notification system
 - Background job processing
-- Advanced search and filtering
-- Enhanced spot search and selection for activities
+- Advanced search and filtering with distance-based results
 - Map-based spot selection interface
 - Favorite and recent spots functionality
-- Server-side search with distance filtering
+- Geographic search with radius filtering
 
 **Phase 5: Mobile App (📱 Future)**
 - React Native/Flutter mobile app
@@ -81,11 +90,21 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - **Auto-refresh**: Activity feed refreshes after creating new activities
 - **Next.js 15**: All API routes updated for async params compatibility
 
+### Search & Statistics Features (Latest)
+- **Spot Search**: Server-side search with text filtering on name, description, and address
+- **SpotSelector**: Enhanced with always-visible "Create new spot" button
+- **Spot Creation Flow**: Users must click map location first, then create spot
+- **Popular Spots**: Made clickable on dashboard, navigate to map view
+- **Community Stats**: Real-time data showing active users, sessions today, new spots
+- **API Architecture**: Frontend-backend proxy system for better data handling
+
 ### Technical Improvements
 - **Map Markers**: Custom tea cup icons replace OpenMoji leaf icons
 - **Icon Consistency**: All tea-related UI elements use unified design
 - **Component Reusability**: Modular icon system with multiple variants
 - **Performance**: Optimized SVG rendering for map compatibility
+- **Type Safety**: Fixed ActivityForm type compatibility issues
+- **Navigation**: Next.js router navigation for better UX
 
 ## Memory Management
 
