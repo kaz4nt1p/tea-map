@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import ClientMap from '../../components/ClientMap';
 import SpotModal from '../../components/SpotModal';
@@ -15,7 +15,7 @@ import { spotsApi, CreateSpotData } from '../../lib/api';
 import toast from 'react-hot-toast';
 import ForestTeaLogo from '../../components/ForestTeaLogo';
 
-export default function MapPage() {
+function MapPageContent() {
   const { isAuthenticated, isLoading: authLoading } = useRequireAuth();
   const searchParams = useSearchParams();
   const [spots, setSpots] = useState<Spot[]>([]);
@@ -62,6 +62,8 @@ export default function MapPage() {
   // Handle spot query parameter to auto-open spot modal
   useEffect(() => {
     const spotId = searchParams.get('spot');
+    const create = searchParams.get('create');
+    
     if (spotId && spots.length > 0) {
       const spot = spots.find(s => s.id === spotId);
       if (spot) {
@@ -69,6 +71,13 @@ export default function MapPage() {
         // Clear the query parameter after opening the modal
         window.history.replaceState({}, '', '/map');
       }
+    }
+    
+    // Handle create parameter - removed auto-opening form
+    // Now users must click on the map to select location first
+    if (create === 'true') {
+      // Clear the query parameter
+      window.history.replaceState({}, '', '/map');
     }
   }, [searchParams, spots]);
 
@@ -217,5 +226,20 @@ export default function MapPage() {
         />
       )}
     </div>
+  );
+}
+
+export default function MapPage() {
+  return (
+    <Suspense fallback={
+      <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-br from-tea-50 via-white to-amber-50">
+        <div className="text-center">
+          <ForestTeaLogo size={60} />
+          <div className="mt-4 text-forest-600">Загрузка...</div>
+        </div>
+      </div>
+    }>
+      <MapPageContent />
+    </Suspense>
   );
 }

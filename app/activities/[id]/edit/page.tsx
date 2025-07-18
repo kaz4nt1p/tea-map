@@ -164,12 +164,11 @@ export default function EditActivityPage() {
     id: activity.spot.id,
     name: activity.spot.name,
     description: activity.spot.description || '',
-    latitude: activity.spot.latitude,
-    longitude: activity.spot.longitude,
-    address: activity.spot.address || '',
-    image_url: activity.spot.image_url || '',
-    created_at: activity.spot.created_at,
-    updated_at: activity.spot.updated_at
+    longDescription: activity.spot.long_description || '',
+    image: activity.spot.image_url || '',
+    lat: activity.spot.latitude,
+    lng: activity.spot.longitude,
+    created_at: activity.spot.created_at
   } : null;
 
   return (
