@@ -24,7 +24,7 @@ function Header({ onRandom }: { onRandom: () => void }) {
       initial={{ y: -20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="w-full h-18 md:h-24 relative z-20 overflow-hidden"
+      className="w-full h-18 md:h-24 relative z-[100] overflow-hidden"
     >
       {/* Glass-morphism background */}
       <div className="absolute inset-0 bg-gradient-to-br from-sage-100/90 via-tea-50/80 to-forest-100/90 backdrop-blur-lg border-b border-white/20 shadow-xl" />

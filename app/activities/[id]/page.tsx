@@ -114,8 +114,7 @@ export default function ActivityDetailPage() {
   };
 
   const handleEdit = () => {
-    // TODO: Implement edit functionality
-    alert('Редактирование активности пока не реализовано');
+    router.push(`/activities/${activityId}/edit`);
   };
 
   const handleDelete = async () => {

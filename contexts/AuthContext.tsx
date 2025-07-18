@@ -76,10 +76,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(googleUser);
             userManager.setUser(googleUser);
             
-            // Clean up URL parameters
+            // Clean up URL parameters and redirect to dashboard if on map
             const url = new URL(window.location.href);
             url.searchParams.delete('token');
             window.history.replaceState({}, '', url.toString());
+            
+            // If we're on the map page after Google OAuth, redirect to dashboard
+            if (window.location.pathname === '/map') {
+              window.location.href = '/dashboard';
+              return;
+            }
             
             toast.success('Успешный вход через Google!');
             setIsLoading(false);
