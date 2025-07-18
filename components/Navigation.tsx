@@ -54,8 +54,8 @@ export const Navigation: React.FC = () => {
     !item.authRequired || (item.authRequired && isAuthenticated)
   );
 
-  // Don't show navigation on auth pages and map page (map has its own header)
-  if (pathname === '/auth' || pathname === '/' || pathname === '/map') {
+  // Don't show navigation on auth pages and landing page only
+  if (pathname === '/auth' || pathname === '/') {
     return null;
   }
 
