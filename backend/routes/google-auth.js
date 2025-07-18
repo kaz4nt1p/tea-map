@@ -44,7 +44,9 @@ router.get('/google/callback',
       
       // Redirect to frontend with access token
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
-      res.redirect(`${frontendUrl}/map?token=${tokens.accessToken}`);
+      const redirectUrl = `${frontendUrl}/dashboard?token=${tokens.accessToken}`;
+      console.log('🔄 Redirecting to:', redirectUrl);
+      res.redirect(redirectUrl);
     } catch (error) {
       console.error('Google OAuth callback error:', error);
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
