@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Activity } from '../lib/types';
+import { Activity, ActivityComment } from '../lib/types';
 import { tokenManager } from '../lib/auth';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -86,6 +86,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     if (activity.spot?.id) {
       onSpotClick?.(activity.spot.id);
     }
+  };
+
+  const handleCommentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Navigate to activity detail page to view and add comments
+    onActivityClick?.(activity);
   };
 
   const getTeaTypeIcon = (teaType?: string) => {
@@ -216,6 +222,45 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         </div>
       )}
 
+      {/* Comments Preview */}
+      {activity.comments && activity.comments.length > 0 && (
+        <div className="px-4 py-3 border-t border-gray-100">
+          <div className="space-y-2">
+            {activity.comments.slice(-2).map((comment: ActivityComment) => (
+              <div key={comment.id} className="flex items-start space-x-2">
+                <AvatarImage
+                  src={comment.user?.avatar_url}
+                  alt={comment.user?.display_name || comment.user?.username || 'User'}
+                  className="w-5 h-5 flex-shrink-0 mt-0.5"
+                />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-1">
+                    <span className="font-medium text-gray-900 text-xs">
+                      {comment.user?.display_name || comment.user?.username}
+                    </span>
+                    <span className="text-gray-500 text-xs">
+                      {formatTime(comment.created_at)}
+                    </span>
+                  </div>
+                  <p className="text-gray-700 text-xs mt-0.5 line-clamp-2">
+                    {comment.content}
+                  </p>
+                </div>
+              </div>
+            ))}
+            
+            {activity.comment_count && activity.comment_count > 2 && (
+              <button
+                onClick={handleCommentClick}
+                className="text-xs text-gray-500 hover:text-gray-700 mt-2"
+              >
+                Показать все {activity.comment_count} комментариев
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Action buttons */}
       <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
         <div className="flex items-center space-x-6">
@@ -235,7 +280,10 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             <span data-testid="like-count">{likeCount}</span>
           </button>
           
-          <button className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700">
+          <button 
+            onClick={handleCommentClick}
+            className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
             <MessageCircle className="w-4 h-4" />
             <span>{activity.comment_count || 0}</span>
           </button>

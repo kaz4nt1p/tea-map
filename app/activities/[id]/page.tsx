@@ -22,6 +22,7 @@ import {
   Share2
 } from 'lucide-react';
 import { AvatarImage } from '../../../components/AvatarImage';
+import { CommentSection } from '../../../components/CommentSection';
 
 export default function ActivityDetailPage() {
   const params = useParams();
@@ -33,6 +34,7 @@ export default function ActivityDetailPage() {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isLiking, setIsLiking] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
 
   const activityId = params.id as string;
 
@@ -64,6 +66,7 @@ export default function ActivityDetailPage() {
         setActivity(data.data.activity);
         setIsLiked(data.data.activity.is_liked || false);
         setLikeCount(data.data.activity.like_count || 0);
+        setCommentCount(data.data.activity.comment_count || 0);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
@@ -479,7 +482,7 @@ export default function ActivityDetailPage() {
               
               <button className="flex items-center space-x-2 text-sm text-gray-500 hover:text-gray-700">
                 <MessageCircle className="w-5 h-5" />
-                <span>{activity.comment_count || 0}</span>
+                <span>{commentCount}</span>
               </button>
             </div>
             
@@ -487,6 +490,15 @@ export default function ActivityDetailPage() {
               {new Date(activity.created_at).toLocaleString('ru-RU')}
             </div>
           </div>
+
+          {/* Comments Section */}
+          <CommentSection
+            activityId={activityId}
+            initialComments={activity.comments || []}
+            initialCount={commentCount}
+            onCommentCountChange={setCommentCount}
+            className="px-6 pb-6"
+          />
         </div>
       </div>
     </div>

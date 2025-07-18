@@ -54,20 +54,20 @@ export const Navigation: React.FC = () => {
     !item.authRequired || (item.authRequired && isAuthenticated)
   );
 
-  // Don't show navigation on auth pages
-  if (pathname === '/auth' || pathname === '/') {
+  // Don't show navigation on auth pages and map page (map has its own header)
+  if (pathname === '/auth' || pathname === '/' || pathname === '/map') {
     return null;
   }
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200">
+    <nav className="bg-gradient-to-r from-sage-50 to-tea-50 shadow-sm border-b border-tea-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/dashboard" className="flex items-center">
             <div className="flex-shrink-0 flex items-center">
-              <TeaIconFilled size={24} className="text-green-600" />
-              <span className="ml-2 text-xl font-bold text-gray-900">Tea Map</span>
+              <TeaIconFilled size={24} className="text-forest-600" />
+              <span className="ml-2 text-xl font-bold text-forest-800">Tea Map</span>
             </div>
           </Link>
 
@@ -81,8 +81,8 @@ export const Navigation: React.FC = () => {
                   href={item.href}
                   className={`flex items-center px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     item.active
-                      ? 'bg-green-100 text-green-700'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      ? 'bg-tea-100 text-forest-700'
+                      : 'text-sage-600 hover:text-forest-600 hover:bg-tea-50'
                   }`}
                 >
                   <Icon className="w-4 h-4 mr-2" />

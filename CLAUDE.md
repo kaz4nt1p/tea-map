@@ -56,6 +56,10 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - Push notification system
 - Background job processing
 - Advanced search and filtering
+- Enhanced spot search and selection for activities
+- Map-based spot selection interface
+- Favorite and recent spots functionality
+- Server-side search with distance filtering
 
 **Phase 5: Mobile App (📱 Future)**
 - React Native/Flutter mobile app
@@ -89,4 +93,5 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - To memorize a new key interaction, message or code insight about the Tea Map project
 - **New Memory**: To memorize
 - Something to memorize
+- To memorize
 - To memorize

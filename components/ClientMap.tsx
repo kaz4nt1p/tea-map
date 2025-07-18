@@ -8,6 +8,7 @@ import { Spot } from '../lib/spots';
 import ForestTeaLogo from './ForestTeaLogo';
 import { useRouter } from 'next/navigation';
 import { createTeaMarkerDataURL, createTeaEmojiMarkerDataURL, createSimpleTeaMarkerDataURL } from './TeaMarkerIcon';
+import UserMenu from './auth/UserMenu';
 
 type ClientMapProps = {
   spots: Spot[];
@@ -72,8 +73,28 @@ function Header({ onRandom }: { onRandom: () => void }) {
         </div>
         
         {/* Navigation and Actions - Right side */}
-        <div className="ml-auto flex items-center gap-3 md:gap-4">
-          {/* Space for UserMenu component */}
+        <div className="ml-auto flex items-center gap-3 md:gap-4 relative z-30">
+          {/* Navigation Links */}
+          <div className="hidden md:flex items-center gap-2">
+            <motion.button
+              onClick={() => router.push('/dashboard')}
+              className="px-4 py-2 text-sm font-medium text-forest-700 hover:text-forest-900 hover:bg-white/20 rounded-lg transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Лента
+            </motion.button>
+            <motion.button
+              onClick={() => router.push('/profile')}
+              className="px-4 py-2 text-sm font-medium text-forest-700 hover:text-forest-900 hover:bg-white/20 rounded-lg transition-all duration-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Профиль
+            </motion.button>
+          </div>
+          
+          <UserMenu />
         </div>
       </div>
       

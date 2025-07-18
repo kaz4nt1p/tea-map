@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 import { tokenManager, authUtils, AuthResponse, LoginData, RegisterData, User } from './auth';
+import { ActivityComment } from './types';
 
 // API Configuration
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
@@ -301,6 +302,26 @@ export const activitiesApi = {
   // Get activities by user
   getActivitiesByUser: async (username: string, page = 1, limit = 20): Promise<ActivityFeedResponse & { user: User }> => {
     return handleApiCall(() => apiClient.get(`/api/activities/user/${username}`, { params: { page, limit } }));
+  },
+  
+  // Get comments for activity
+  getComments: async (activityId: string, page = 1, limit = 10): Promise<{ data: ActivityComment[]; pagination: any }> => {
+    return handleApiCall(() => apiClient.get(`/api/activities/${activityId}/comments`, { params: { page, limit } }));
+  },
+  
+  // Create comment
+  createComment: async (activityId: string, content: string): Promise<{ comment: ActivityComment }> => {
+    return handleApiCall(() => apiClient.post(`/api/activities/${activityId}/comments`, { content }));
+  },
+  
+  // Update comment
+  updateComment: async (activityId: string, commentId: string, content: string): Promise<{ comment: ActivityComment }> => {
+    return handleApiCall(() => apiClient.put(`/api/activities/${activityId}/comments/${commentId}`, { content }));
+  },
+  
+  // Delete comment
+  deleteComment: async (activityId: string, commentId: string): Promise<void> => {
+    return handleApiCall(() => apiClient.delete(`/api/activities/${activityId}/comments/${commentId}`));
   }
 };
 
