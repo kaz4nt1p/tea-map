@@ -179,40 +179,9 @@ function MapPageContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Page Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Карта чайных спотов
-              </h1>
-              <p className="text-gray-600">
-                Исследуйте места для чаепития и создавайте новые споты
-              </p>
-            </div>
-            
-            {isAuthenticated && (
-              <button
-                onClick={() => {
-                  // Navigate to a random spot
-                  if (spots.length > 0) {
-                    const randomSpot = spots[Math.floor(Math.random() * spots.length)];
-                    setSelectedSpot(randomSpot);
-                  }
-                }}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <span className="mr-2">🎲</span>
-                Случайный спот
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Map Container */}
-      <div className="relative" style={{ height: 'calc(100vh - 120px)' }}>
+      <div className="relative" style={{ height: '100vh' }}>
         {/* Loading overlay for spots */}
         {spotsLoading && (
           <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-20">

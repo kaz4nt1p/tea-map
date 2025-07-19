@@ -5,10 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
 import { Spot } from '../lib/spots';
-import ForestTeaLogo from './ForestTeaLogo';
-import { useRouter } from 'next/navigation';
-import { createTeaMarkerDataURL, createTeaEmojiMarkerDataURL, createSimpleTeaMarkerDataURL } from './TeaMarkerIcon';
-import UserMenu from './auth/UserMenu';
+import { createSimpleTeaMarkerDataURL } from './TeaMarkerIcon';
 
 type ClientMapProps = {
   spots: Spot[];
@@ -16,95 +13,8 @@ type ClientMapProps = {
   onMapClick: (lat: number, lng: number) => void;
 };
 
-function Header({ onRandom }: { onRandom: () => void }) {
-  const router = useRouter();
-  
-  return (
-    <motion.header
-      initial={{ y: -20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="w-full h-18 md:h-24 relative z-[100] overflow-hidden"
-    >
-      {/* Glass-morphism background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-sage-100/90 via-tea-50/80 to-forest-100/90 backdrop-blur-lg border-b border-white/20 shadow-xl" />
-      
-      {/* Organic background pattern */}
-      <div className="absolute inset-0 bg-gradient-to-r from-tea-500/10 via-sage-400/5 to-forest-500/10" />
-      
-      {/* Content */}
-      <div className="relative flex items-center h-full px-4 md:px-8">
-        {/* Logo and Brand */}
-        <motion.div 
-          initial={{ x: -30, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="flex items-center gap-3 md:gap-5 cursor-pointer"
-          onClick={() => router.push('/')}
-        >
-          <ForestTeaLogo className="drop-shadow-sm" size={40} />
-          <div className="flex flex-col">
-            <span className="font-bold text-xl md:text-3xl tracking-wide text-forest-800 drop-shadow-sm">
-              Forest Tea
-            </span>
-            <span className="text-xs md:text-sm text-sage-600 font-medium tracking-wider">
-              Ceremony Spots
-            </span>
-          </div>
-        </motion.div>
-        
-        {/* Centered Random Spot Button */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 max-w-xs">
-          <motion.button
-            type="button"
-            onClick={onRandom}
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-gradient-to-r from-tea-500 to-sage-600 text-white border-none rounded-2xl px-4 py-2.5 md:px-6 md:py-3 text-sm md:text-base font-semibold cursor-pointer shadow-lg hover:shadow-xl active:shadow-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 backdrop-blur-sm hover:from-tea-600 hover:to-sage-700 group whitespace-nowrap"
-            aria-label="Найти случайный чайный спот"
-          >
-            <span className="flex items-center gap-2">
-              <span className="hidden md:inline">Найти лучший спот</span>
-              <span className="md:hidden">Случайный спот</span>
-              <span className="text-amber-200 group-hover:text-amber-100 transition-colors">🌿</span>
-            </span>
-          </motion.button>
-        </div>
-        
-        {/* Navigation and Actions - Right side */}
-        <div className="ml-auto flex items-center gap-3 md:gap-4 relative z-30">
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center gap-2">
-            <motion.button
-              onClick={() => router.push('/dashboard')}
-              className="px-4 py-2 text-sm font-medium text-forest-700 hover:text-forest-900 hover:bg-white/20 rounded-lg transition-all duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Лента
-            </motion.button>
-            <motion.button
-              onClick={() => router.push('/profile')}
-              className="px-4 py-2 text-sm font-medium text-forest-700 hover:text-forest-900 hover:bg-white/20 rounded-lg transition-all duration-200"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              Профиль
-            </motion.button>
-          </div>
-          
-          <UserMenu />
-        </div>
-      </div>
-      
-      {/* Subtle bottom accent */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-tea-400/30 to-transparent" />
-    </motion.header>
-  );
-}
 
-function SpotList({ spots, onMarkerClick }: { spots: Spot[]; onMarkerClick: (spot: Spot) => void }) {
+function SpotList({ spots, onMarkerClick, onRandom }: { spots: Spot[]; onMarkerClick: (spot: Spot) => void; onRandom: () => void }) {
   return (
     <motion.aside
       initial={{ x: -20, opacity: 0 }}
@@ -112,17 +22,23 @@ function SpotList({ spots, onMarkerClick }: { spots: Spot[]; onMarkerClick: (spo
       transition={{ duration: 0.6, delay: 0.2 }}
       className="w-full md:w-96 lg:w-[28vw] max-w-md h-full bg-white/95 backdrop-blur-sm border-r-2 border-tea-500 shadow-xl rounded-l-2xl md:rounded-l-3xl overflow-hidden flex flex-col z-10 relative"
     >
-      <div className="p-4 border-b border-tea-200 bg-gradient-to-r from-tea-50 to-tea-100">
-        <h2 className="text-lg font-bold text-tea-800 flex items-center gap-2">
-          <span className="text-xl">🍃</span>
-          Чайные споты
-        </h2>
-        <p className="text-sm text-tea-600 mt-1">
-          {spots.length} {spots.length === 1 ? 'спот' : spots.length < 5 ? 'спота' : 'спотов'} найдено
-        </p>
-      </div>
       
       <div className="tea-spot-list flex-1 overflow-y-auto p-3 space-y-3">
+        {/* Random spot button at top of list */}
+        <motion.button
+          type="button"
+          onClick={onRandom}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="w-full bg-gradient-to-r from-tea-500 to-sage-600 text-white border-none rounded-xl px-4 py-3 text-sm font-semibold cursor-pointer shadow-sm hover:shadow-md active:shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-400/50 focus:ring-offset-2 backdrop-blur-sm hover:from-tea-600 hover:to-sage-700 group"
+          aria-label="Найти случайный чайный спот"
+        >
+          <span className="flex items-center justify-center gap-2">
+            <span>Найти лучший спот</span>
+            <span className="text-amber-200 group-hover:text-amber-100 transition-colors">🌿</span>
+          </span>
+        </motion.button>
         <AnimatePresence>
           {spots.map((spot, idx) => (
             <motion.div
@@ -317,8 +233,6 @@ export default function ClientMap({
 
   return (
     <div className="w-full h-full bg-gradient-to-br from-tea-50 to-tea-100 flex flex-col overflow-hidden">
-      <Header onRandom={handleRandomSpot} />
-      
       <div className="flex-1 flex flex-col md:flex-row gap-2 md:gap-4 p-2 md:p-4 overflow-hidden">
         {/* Mobile: Collapsible spot list */}
         <div className="md:hidden">
@@ -333,14 +247,14 @@ export default function ClientMap({
               </svg>
             </summary>
             <div className="mt-2 max-h-64 overflow-hidden">
-              <SpotList spots={spots} onMarkerClick={handleSpotListClick} />
+              <SpotList spots={spots} onMarkerClick={handleSpotListClick} onRandom={handleRandomSpot} />
             </div>
           </details>
         </div>
         
         {/* Desktop: Always visible spot list */}
         <div className="hidden md:flex h-full">
-          <SpotList spots={spots} onMarkerClick={handleSpotListClick} />
+          <SpotList spots={spots} onMarkerClick={handleSpotListClick} onRandom={handleRandomSpot} />
         </div>
         
         {/* Map container */}

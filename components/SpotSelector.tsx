@@ -144,22 +144,21 @@ export const SpotSelector: React.FC<SpotSelectorProps> = ({
             />
           </div>
 
-          {/* Create new spot button - always visible */}
-          <button
-            type="button"
-            onClick={handleCreateSpot}
-            className="w-full text-left p-3 mt-2 border border-gray-200 rounded-lg hover:bg-green-50 focus:bg-green-50 focus:outline-none text-green-600 transition-colors z-30 relative"
-            style={{ pointerEvents: 'all' }}
-          >
-            <div className="flex items-center">
-              <Plus className="w-4 h-4 mr-2" />
-              <span>Создать новый спот</span>
-            </div>
-          </button>
-
           {/* Dropdown */}
           {isOpen && (
             <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+              {/* Create new spot button - moved to top of list and made smaller */}
+              <button
+                type="button"
+                onClick={handleCreateSpot}
+                className="w-full text-left p-2 border-b border-gray-200 hover:bg-green-50 focus:bg-green-50 focus:outline-none text-green-600 transition-colors text-sm"
+                style={{ pointerEvents: 'all' }}
+              >
+                <div className="flex items-center">
+                  <Plus className="w-3 h-3 mr-2" />
+                  <span>Создать новый спот</span>
+                </div>
+              </button>
               {loading && (
                 <div className="flex items-center justify-center py-4">
                   <Loader2 className="w-4 h-4 animate-spin text-green-600" />

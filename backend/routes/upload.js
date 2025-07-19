@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { uploadImage, deleteImage, getResponsiveImageUrl } = require('../services/cloudinary');
 const { globalErrorHandler } = require('../utils/errors');
+const { authenticateToken } = require('../middleware/auth');
 
-// Upload single image
-router.post('/', async (req, res) => {
+// Upload single image - requires authentication
+router.post('/', authenticateToken, async (req, res) => {
   try {
     // Upload image to Cloudinary
     const uploadedFile = await uploadImage(req, res);
@@ -79,8 +80,8 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Delete image
-router.delete('/:publicId', async (req, res) => {
+// Delete image - requires authentication
+router.delete('/:publicId', authenticateToken, async (req, res) => {
   try {
     const { publicId } = req.params;
     

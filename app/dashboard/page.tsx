@@ -265,13 +265,6 @@ export default function DashboardPage() {
                     <Users className="w-4 h-4 mr-3" />
                     Мой профиль
                   </button>
-                  <button
-                    onClick={() => router.push('/stats')}
-                    className="w-full flex items-center px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-lg"
-                  >
-                    <TrendingUp className="w-4 h-4 mr-3" />
-                    Статистика
-                  </button>
                 </div>
               </div>
 
@@ -428,46 +421,6 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Suggested Friends */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">
-                  Рекомендуемые друзья
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          Анна Петрова
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          @anna_tea
-                        </div>
-                      </div>
-                    </div>
-                    <button className="text-xs text-green-600 hover:text-green-700">
-                      Подписаться
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          Михаил Сидоров
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          @mike_oolong
-                        </div>
-                      </div>
-                    </div>
-                    <button className="text-xs text-green-600 hover:text-green-700">
-                      Подписаться
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

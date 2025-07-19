@@ -9,7 +9,6 @@ import {
   Home, 
   Map, 
   User, 
-  TrendingUp, 
   Menu,
   X 
 } from 'lucide-react';
@@ -41,13 +40,6 @@ export const Navigation: React.FC = () => {
       active: pathname === '/profile',
       authRequired: true
     },
-    { 
-      name: 'Статистика', 
-      href: '/stats', 
-      icon: TrendingUp, 
-      active: pathname === '/stats',
-      authRequired: true
-    }
   ];
 
   const filteredNavItems = navItems.filter(item => 
