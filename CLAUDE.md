@@ -68,6 +68,16 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - Removed old "Forest Tea" branding from landing page and navigation
 - Improved page layout consistency and user experience
 
+**Phase 3.8: Production Deployment (✅ Completed)**
+- Full production deployment to VPS server (77.232.139.160)
+- Domain setup with SSL: https://teamap.duckdns.org
+- PostgreSQL database with proper OAuth schema
+- PM2 process management with auto-restart
+- Nginx reverse proxy with SSL termination
+- Google OAuth integration with production URLs
+- Environment configuration for production vs development
+- Database schema migration for OAuth fields (google_id, auth_provider)
+
 **Phase 4: Advanced Features (🎯 Future)**
 - Real-time WebSocket connections
 - Push notification system
@@ -113,12 +123,50 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - **Type Safety**: Fixed ActivityForm type compatibility issues
 - **Navigation**: Next.js router navigation for better UX
 
+## Production Deployment Details
+
+### Live Application
+- **Production URL**: https://teamap.duckdns.org
+- **Server**: Ubuntu 22.04 VPS (77.232.139.160)
+- **Database**: PostgreSQL with Prisma ORM
+- **Process Manager**: PM2 with auto-restart on boot
+- **Web Server**: Nginx with SSL/TLS termination
+
+### Deployment Commands
+```bash
+# Frontend production commands
+npm run build          # Build for production
+npm run start          # Start production server (port 3000)
+pm2 start "npm run start" --name "tea-map-frontend"
+
+# Backend production commands  
+cd backend
+npm run start          # Start backend server (port 3002)
+pm2 start "npm run start" --name "tea-map-backend"
+
+# Database operations
+npx prisma db push --accept-data-loss  # Update schema
+npx prisma generate                    # Regenerate client
+```
+
+### Environment Configuration
+- **Frontend**: `.env.local` with `NEXT_PUBLIC_BACKEND_URL=https://teamap.duckdns.org`
+- **Backend**: `.env` with PostgreSQL connection and OAuth secrets
+- **Google OAuth**: Requires production domains in Google Cloud Console:
+  - Authorized JavaScript origins: `https://teamap.duckdns.org`
+  - Authorized redirect URIs: `https://teamap.duckdns.org/api/auth/google/callback`
+
+### Troubleshooting
+- **Database Schema**: Use `npx prisma db push` to sync schema changes
+- **OAuth Issues**: Verify Google Cloud Console URLs match production domain
+- **Port Configuration**: Frontend runs on 3000, backend on 3002 (not 3001)
+- **SSL Issues**: Restart nginx after config changes: `systemctl restart nginx`
+
 ## Memory Management
 
 ### Project Interactions
-- To memorize a new key interaction, message or code insight about the Tea Map project
-- **New Memory**: To memorize
-- Something to memorize
-- To memorize
-- To memorize
-- To memorize
+- **Production Deployment Completed**: July 19, 2025 - Full deployment with OAuth integration
+- **Database Schema Fixed**: Added missing google_id and auth_provider columns for OAuth
+- **Domain & SSL**: teamap.duckdns.org configured with Let's Encrypt SSL certificate
+- **Google OAuth Setup**: Requires /callback suffix in redirect URIs configuration
+- **Process Management**: PM2 configured for auto-restart with saved configuration
