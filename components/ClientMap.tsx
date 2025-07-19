@@ -11,6 +11,7 @@ type ClientMapProps = {
   spots: Spot[];
   onMarkerClick: (spot: Spot) => void;
   onMapClick: (lat: number, lng: number) => void;
+  isCreatingSpot?: boolean;
 };
 
 
@@ -105,6 +106,7 @@ export default function ClientMap({
   spots,
   onMarkerClick,
   onMapClick,
+  isCreatingSpot = false,
 }: ClientMapProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
@@ -272,21 +274,26 @@ export default function ClientMap({
             style={{ minHeight: '400px' }}
           />
           
-          {/* Map overlay for loading state */}
-          {spots.length === 0 && (
-            <div className="absolute inset-0 bg-tea-50/80 backdrop-blur-sm flex items-center justify-center z-10">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-center"
-              >
-                <div className="text-6xl mb-4">🗺️</div>
-                <h3 className="text-xl font-bold text-tea-800 mb-2">Добро пожаловать в Tea Spot!</h3>
-                <p className="text-tea-600 max-w-md mx-auto leading-relaxed">
-                  Кликните на карту, чтобы добавить свой первый чайный спот и начать создавать карту лучших мест для чаепития.
-                </p>
-              </motion.div>
-            </div>
+          {/* Welcome notification */}
+          {spots.length === 0 && !isCreatingSpot && (
+            <motion.div
+              initial={{ opacity: 0, x: 50, scale: 0.9 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 50, scale: 0.9 }}
+              className="absolute top-4 right-4 z-20 pointer-events-none"
+            >
+              <div className="bg-white/95 backdrop-blur-sm border border-tea-200 rounded-xl shadow-lg px-4 py-3 max-w-xs">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">🗺️</span>
+                  <div>
+                    <h3 className="text-sm font-semibold text-tea-800">Добро пожаловать!</h3>
+                    <p className="text-xs text-tea-600 leading-relaxed">
+                      Кликните на карту, чтобы добавить первый спот
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
           )}
         </motion.div>
       </div>

@@ -11,6 +11,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
     }
 
+    // Get authorization header from the request
+    const authHeader = request.headers.get('authorization');
+
     // Create a new FormData object for the backend request
     const backendFormData = new FormData();
     backendFormData.append('image', file);
@@ -18,6 +21,9 @@ export async function POST(request: NextRequest) {
     // Forward the request to the backend Cloudinary endpoint
     const response = await fetch(`${BACKEND_URL}/api/upload`, {
       method: 'POST',
+      headers: {
+        ...(authHeader && { 'Authorization': authHeader }),
+      },
       body: backendFormData,
     });
 

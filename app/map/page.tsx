@@ -184,7 +184,7 @@ function MapPageContent() {
       <div className="relative" style={{ height: '100vh' }}>
         {/* Loading overlay for spots */}
         {spotsLoading && (
-          <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-20">
+          <div className="absolute inset-0 bg-white/70 flex items-center justify-center z-20 pointer-events-none">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tea-600 mx-auto"></div>
               <div className="mt-2 text-forest-600">Загружаем споты...</div>
@@ -196,6 +196,7 @@ function MapPageContent() {
           spots={spots}
           onMarkerClick={handleMarkerClick}
           onMapClick={handleMapClick}
+          isCreatingSpot={!!formCoords}
         />
       </div>
       

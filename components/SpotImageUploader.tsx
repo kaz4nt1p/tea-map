@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
+import { tokenManager } from "../lib/auth";
 
 export default function SpotImageUploader({ onUpload }: { onUpload: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
@@ -24,8 +25,12 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
       const formData = new FormData();
       formData.append('file', file);
 
+      const token = tokenManager.getAccessToken();
       const response = await fetch('/api/upload', {
         method: 'POST',
+        headers: {
+          ...(token && { 'Authorization': `Bearer ${token}` }),
+        },
         body: formData,
       });
 
