@@ -7,7 +7,7 @@ import { ActivityForm } from '../../components/ActivityForm';
 import { User, Activity, CreateActivityRequest, UserStats } from '../../lib/types';
 import { tokenManager } from '../../lib/auth';
 import { useRouter } from 'next/navigation';
-import { Calendar, MapPin, TrendingUp, Users, Settings, Edit3, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, TrendingUp, Users, Settings, Feather, Loader2 } from 'lucide-react';
 import { AvatarImage } from '../../components/AvatarImage';
 
 export default function ProfilePage() {
@@ -119,7 +119,9 @@ export default function ProfilePage() {
                   <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
                     {user.display_name || user.username}
                   </h1>
-                  <p className="text-sm lg:text-base text-gray-600">@{user.username}</p>
+                  {user.auth_provider !== 'google' && (
+                    <p className="text-sm lg:text-base text-gray-600">@{user.username}</p>
+                  )}
                   {user.bio && (
                     <p className="text-sm lg:text-base text-gray-700 mt-1 lg:mt-2">{user.bio}</p>
                   )}
@@ -131,7 +133,7 @@ export default function ProfilePage() {
                   onClick={() => setShowActivityForm(true)}
                   className="flex items-center px-3 py-2 lg:px-4 text-sm lg:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  <Edit3 className="w-4 h-4 mr-1 lg:mr-2" />
+                  <Feather className="w-4 h-4 mr-1 lg:mr-2" />
                   <span className="hidden sm:inline">Записать сессию</span>
                   <span className="sm:hidden">Записать</span>
                 </button>

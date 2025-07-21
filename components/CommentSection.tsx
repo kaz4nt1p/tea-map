@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ActivityComment } from '../lib/types';
 import { CommentForm } from './CommentForm';
 import { CommentItem } from './CommentItem';
-import { MessageSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { MessageSquare, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
 import { authUtils, tokenManager } from '../lib/auth';
 import { AvatarImage } from './AvatarImage';
 
@@ -193,19 +193,26 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   };
 
   return (
-    <div className={`border-t border-gray-200 ${className}`}>
+    <div className={`border-t border-gray-100 ${className}`}>
       {/* Comments Header */}
-      <div className="flex items-center border-b border-gray-200 bg-white">
+      <div className="border-b border-gray-100">
         <button
           onClick={toggleExpanded}
-          className={`flex items-center space-x-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+          className={`flex items-center justify-between w-full px-6 py-4 text-sm font-medium transition-colors ${
             isExpanded 
-              ? 'border-orange-500 text-orange-600' 
-              : 'border-transparent text-gray-500 hover:text-gray-700'
+              ? 'text-green-700 bg-white' 
+              : 'text-gray-600 hover:text-green-600 bg-gray-50/50 hover:bg-white'
           }`}
         >
-          <MessageSquare className="w-4 h-4" />
-          <span>Комментарии ({totalComments})</span>
+          <div className="flex items-center space-x-3">
+            <MessageCircle className="w-4 h-4" />
+            <span>Комментарии ({totalComments})</span>
+          </div>
+          {isExpanded ? (
+            <ChevronUp className="w-4 h-4" />
+          ) : (
+            <ChevronDown className="w-4 h-4" />
+          )}
         </button>
       </div>
 
@@ -214,18 +221,18 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
         <div className="bg-white">
           {/* Comment Form */}
           {currentUser && (
-            <div className="p-4 border-b border-gray-100">
+            <div className="px-6 py-5 border-b border-gray-100">
               <div className="flex items-start space-x-3">
                 <AvatarImage
                   src={currentUser.avatar_url}
                   alt={currentUser.display_name || currentUser.username}
-                  className="w-6 h-6 flex-shrink-0 mt-1"
+                  className="w-8 h-8 flex-shrink-0 mt-1"
                 />
                 <div className="flex-1">
                   <CommentForm
                     onSubmit={handleCreateComment}
                     isLoading={isLoading}
-                    placeholder="Добавьте комментарий, @ чтобы отметить"
+                    placeholder="Добавьте комментарий..."
                     buttonText="Опубликовать"
                   />
                 </div>
@@ -236,10 +243,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
           {/* Comments List */}
           <div className="max-h-96 overflow-y-auto">
             {isLoading && comments.length === 0 ? (
-              <div className="p-4 space-y-4">
+              <div className="px-6 py-4 space-y-4">
                 {[...Array(3)].map((_, i) => (
                   <div key={i} className="flex items-center space-x-3">
-                    <div className="w-6 h-6 bg-gray-200 rounded-full animate-pulse" />
+                    <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse" />
                     <div className="flex-1">
                       <div className="h-3 bg-gray-200 rounded animate-pulse mb-2" />
                       <div className="h-2 bg-gray-200 rounded animate-pulse w-2/3" />
@@ -250,7 +257,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
             ) : comments.length > 0 ? (
               <div className="divide-y divide-gray-100">
                 {comments.map((comment) => (
-                  <div key={comment.id} className="p-4">
+                  <div key={comment.id} className="px-6 py-4 hover:bg-gray-50/50 transition-colors">
                     <CommentItem
                       comment={comment}
                       currentUserId={currentUser?.id}
@@ -262,11 +269,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 ))}
                 
                 {hasMore && (
-                  <div className="p-4 text-center border-t border-gray-100">
+                  <div className="px-6 py-4 text-center border-t border-gray-100">
                     <button
                       onClick={handleLoadMore}
                       disabled={isLoading}
-                      className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors disabled:opacity-50"
+                      className="text-green-600 hover:text-green-700 text-sm font-medium transition-colors disabled:opacity-50"
                     >
                       {isLoading ? 'Загрузка...' : 'Показать больше комментариев'}
                     </button>
@@ -274,11 +281,11 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
                 )}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm">Пока нет комментариев</p>
+              <div className="text-center px-6 py-8 text-gray-500">
+                <MessageCircle className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm text-gray-600">Пока нет комментариев</p>
                 {!currentUser && (
-                  <p className="text-xs mt-1 text-gray-400">Войдите, чтобы добавить комментарий</p>
+                  <p className="text-xs mt-1 text-gray-500">Войдите, чтобы добавить комментарий</p>
                 )}
               </div>
             )}

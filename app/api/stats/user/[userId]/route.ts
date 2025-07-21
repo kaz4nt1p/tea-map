@@ -13,7 +13,8 @@ export async function GET(
     const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
     
     // Forward request to backend API
-    const backendResponse = await fetch(`http://localhost:3002/api/stats/user/${userId}`, {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3002';
+    const backendResponse = await fetch(`${backendUrl}/api/stats/user/${userId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -6,13 +6,21 @@ import { ActivityList } from '../../components/ActivityList';
 import { ActivityForm } from '../../components/ActivityForm';
 import { CreateActivityRequest, DashboardStats, PopularSpot, WeeklyStats, UserStats } from '../../lib/types';
 import { tokenManager } from '../../lib/auth';
-import { Plus, TrendingUp, Users, MapPin, Calendar, Loader2 } from 'lucide-react';
+import { Feather, TrendingUp, Users, MapPin, Calendar, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AvatarImage } from '../../components/AvatarImage';
 
 export default function DashboardPage() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+
+  // Redirect unauthenticated users
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      router.push('/auth');
+    }
+  }, [isLoading, isAuthenticated, router]);
+
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activityRefreshKey, setActivityRefreshKey] = useState(0);
@@ -31,23 +39,45 @@ export default function DashboardPage() {
       
       const token = tokenManager.getAccessToken();
       console.log('Dashboard fetch - token available:', !!token);
+      
       const response = await fetch('/api/stats/dashboard', {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
         },
       });
+      
       console.log('Dashboard response status:', response.status);
+      console.log('Dashboard response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        throw new Error('Failed to fetch dashboard statistics');
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.text();
+          console.error('Dashboard API error response:', errorData);
+          errorMessage += ` - ${errorData}`;
+        } catch (e) {
+          console.error('Could not read error response:', e);
+        }
+        throw new Error(`Failed to fetch dashboard statistics - ${errorMessage}`);
       }
       
       const data = await response.json();
+      console.log('Dashboard data received:', data);
       setDashboardStats(data.data);
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
-      setStatsError('Failed to load statistics');
+      
+      // More specific error messages
+      if (error.message.includes('fetch')) {
+        setStatsError('Network error - check connection to backend');
+      } else if (error.message.includes('401')) {
+        setStatsError('Authentication error - please try logging in again');
+      } else if (error.message.includes('500')) {
+        setStatsError('Server error - please try again later');
+      } else {
+        setStatsError(`Failed to load statistics: ${error.message}`);
+      }
     } finally {
       setStatsLoading(false);
     }
@@ -55,13 +85,18 @@ export default function DashboardPage() {
 
   // Fetch user statistics
   const fetchUserStats = async () => {
-    if (!user?.id) return;
+    if (!user?.id) {
+      console.log('User stats fetch skipped - no user ID');
+      return;
+    }
     
     try {
       setUserStatsLoading(true);
       setUserStatsError(null);
       
       const token = tokenManager.getAccessToken();
+      console.log('User stats fetch - token available:', !!token, 'user ID:', user.id);
+      
       const response = await fetch(`/api/stats/user/${user.id}`, {
         headers: {
           'Content-Type': 'application/json',
@@ -69,31 +104,55 @@ export default function DashboardPage() {
         },
       });
       
+      console.log('User stats response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch user statistics');
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+        try {
+          const errorData = await response.text();
+          console.error('User stats API error response:', errorData);
+          errorMessage += ` - ${errorData}`;
+        } catch (e) {
+          console.error('Could not read user stats error response:', e);
+        }
+        throw new Error(`Failed to fetch user statistics - ${errorMessage}`);
       }
       
       const data = await response.json();
+      console.log('User stats data received:', data);
       setUserStats(data.data);
     } catch (error) {
       console.error('Error fetching user stats:', error);
-      setUserStatsError('Failed to load user statistics');
+      
+      // More specific error messages
+      if (error.message.includes('fetch')) {
+        setUserStatsError('Network error - check connection to backend');
+      } else if (error.message.includes('401')) {
+        setUserStatsError('Authentication error - please try logging in again');
+      } else if (error.message.includes('500')) {
+        setUserStatsError('Server error - please try again later');
+      } else {
+        setUserStatsError(`Failed to load statistics: ${error.message}`);
+      }
     } finally {
       setUserStatsLoading(false);
     }
   };
 
-  // Load dashboard stats on component mount
+  // Load dashboard stats when authentication is ready
   useEffect(() => {
-    fetchDashboardStats();
-  }, []);
+    // Wait for authentication to be initialized before fetching stats
+    if (!isLoading && isAuthenticated) {
+      fetchDashboardStats();
+    }
+  }, [isLoading, isAuthenticated]);
 
   // Load user stats when user is available
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && !isLoading && isAuthenticated) {
       fetchUserStats();
     }
-  }, [user?.id]);
+  }, [user?.id, isLoading, isAuthenticated]);
 
   const handleCreateActivity = async (activityData: CreateActivityRequest) => {
     if (!isAuthenticated) {
@@ -139,6 +198,18 @@ export default function DashboardPage() {
     }
   };
 
+  // Show loading state while checking authentication or redirecting
+  if (isLoading || (!isAuthenticated && typeof window !== 'undefined')) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Загрузка...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -159,7 +230,7 @@ export default function DashboardPage() {
                 onClick={() => setShowActivityForm(true)}
                 className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Feather className="w-4 h-4 mr-2" />
                 Записать сессию
               </button>
             )}
@@ -195,9 +266,11 @@ export default function DashboardPage() {
                         <h3 className="font-semibold text-gray-900">
                           {user.display_name || user.username}
                         </h3>
-                        <p className="text-sm text-gray-500">
-                          @{user.username}
-                        </p>
+                        {user.auth_provider !== 'google' && (
+                          <p className="text-sm text-gray-500">
+                            @{user.username}
+                          </p>
+                        )}
                       </button>
                     </div>
                   </div>
