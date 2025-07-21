@@ -182,7 +182,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         
         {/* Activity metadata */}
         <div className="flex items-center text-sm text-gray-500 space-x-4 mb-3">
-          {activity.duration_minutes && (
+          {activity.duration_minutes !== undefined && activity.duration_minutes !== null && (
             <div className="flex items-center">
               <Clock className="w-4 h-4 mr-1" />
               <span>{activity.duration_minutes} мин</span>

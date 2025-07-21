@@ -1,20 +1,24 @@
 const express = require('express');
 const { PrismaClient } = require('../generated/prisma');
-const { optionalAuth } = require('../middleware/auth');
+const { optionalAuth, authenticateToken } = require('../middleware/auth');
 const { asyncHandler, successResponse } = require('../utils/errors');
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 /**
- * Get dashboard statistics
+ * Get dashboard statistics (user-specific weekly stats + global community stats)
  * GET /api/stats/dashboard
  */
-router.get('/dashboard', optionalAuth, asyncHandler(async (req, res) => {
+router.get('/dashboard', authenticateToken, asyncHandler(async (req, res) => {
+  const userId = req.user.id; // Get authenticated user ID
+  
   // Calculate start of the week (Monday)
   const now = new Date();
   const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Monday
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Handle Sunday case
+  startOfWeek.setDate(now.getDate() - daysFromMonday);
   startOfWeek.setHours(0, 0, 0, 0);
   
   // Calculate start of last 7 days
@@ -22,30 +26,35 @@ router.get('/dashboard', optionalAuth, asyncHandler(async (req, res) => {
   sevenDaysAgo.setDate(now.getDate() - 7);
   sevenDaysAgo.setHours(0, 0, 0, 0);
   
-  // Get this week's activities count
-  const weeklyActivitiesCount = await prisma.activity.count({
+  // Get USER'S weekly activities (sessions and duration)
+  const userWeeklyActivities = await prisma.activity.findMany({
     where: {
-      created_at: {
-        gte: startOfWeek
-      }
-    }
-  });
-  
-  // Get this week's total duration
-  const weeklyActivities = await prisma.activity.findMany({
-    where: {
+      user_id: userId,
       created_at: {
         gte: startOfWeek
       }
     },
     select: {
-      duration_minutes: true
+      duration_minutes: true,
+      created_at: true
     }
   });
   
-  const totalDuration = weeklyActivities.reduce((sum, activity) => {
+  const weeklyActivitiesCount = userWeeklyActivities.length;
+  const totalDuration = userWeeklyActivities.reduce((sum, activity) => {
     return sum + (activity.duration_minutes || 0);
   }, 0);
+  
+  // Debug logging for dashboard weekly stats
+  console.log(`Dashboard stats for user ${userId}:`, {
+    startOfWeek: startOfWeek.toISOString(),
+    weeklyActivitiesCount,
+    totalDuration,
+    activities: userWeeklyActivities.map(a => ({
+      date: a.created_at.toISOString(),
+      duration: a.duration_minutes
+    }))
+  });
   
   // Get popular spots from last 7 days
   const popularSpotsData = await prisma.spot.findMany({
@@ -74,9 +83,10 @@ router.get('/dashboard', optionalAuth, asyncHandler(async (req, res) => {
     .sort((a, b) => b.activityCount - a.activityCount) // Sort by activity count descending
     .slice(0, 5); // Get top 5 popular spots
   
-  // Get new spots created this week
+  // Get USER'S new spots created this week
   const newSpotsCount = await prisma.spot.count({
     where: {
+      creator_id: userId,
       created_at: {
         gte: startOfWeek
       }
@@ -130,13 +140,16 @@ router.get('/dashboard', optionalAuth, asyncHandler(async (req, res) => {
  * Get user-specific statistics
  * GET /api/stats/user/:userId
  */
-router.get('/user/:userId', optionalAuth, asyncHandler(async (req, res) => {
-  const { userId } = req.params;
+router.get('/user/:userId', authenticateToken, asyncHandler(async (req, res) => {
+  const { userId: paramUserId } = req.params;
+  const userId = req.user.id; // Use authenticated user's ID for security
   
   // Calculate start of the week (Monday)
   const now = new Date();
   const startOfWeek = new Date(now);
-  startOfWeek.setDate(now.getDate() - now.getDay() + 1); // Monday
+  const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Handle Sunday case
+  startOfWeek.setDate(now.getDate() - daysFromMonday);
   startOfWeek.setHours(0, 0, 0, 0);
   
   // Calculate start of the month
@@ -156,39 +169,51 @@ router.get('/user/:userId', optionalAuth, asyncHandler(async (req, res) => {
     }
   });
   
-  // Get user's activities this week
-  const activitiesThisWeek = await prisma.activity.count({
-    where: {
-      user_id: userId,
-      created_at: {
-        gte: startOfWeek
-      }
-    }
-  });
-  
-  // Get user's activities this month
-  const activitiesThisMonth = await prisma.activity.count({
-    where: {
-      user_id: userId,
-      created_at: {
-        gte: startOfMonth
-      }
-    }
-  });
-  
-  // Get user's total duration
+  // Get all user activities for various calculations
   const userActivities = await prisma.activity.findMany({
     where: {
       user_id: userId
     },
     select: {
-      duration_minutes: true
+      duration_minutes: true,
+      created_at: true
     }
   });
   
+  // Calculate total duration
   const totalDuration = userActivities.reduce((sum, activity) => {
     return sum + (activity.duration_minutes || 0);
   }, 0);
+  
+  // Filter activities for this week and this month
+  const weeklyActivities = userActivities.filter(activity => 
+    activity.created_at >= startOfWeek
+  );
+  
+  const monthlyActivities = userActivities.filter(activity => 
+    activity.created_at >= startOfMonth
+  );
+  
+  // Calculate weekly stats
+  const activitiesThisWeek = weeklyActivities.length;
+  const weeklyDuration = weeklyActivities.reduce((sum, activity) => {
+    return sum + (activity.duration_minutes || 0);
+  }, 0);
+  
+  // Calculate monthly count
+  const activitiesThisMonth = monthlyActivities.length;
+  
+  // Debug logging to verify consistency
+  console.log(`User ${userId} weekly stats:`, {
+    startOfWeek: startOfWeek.toISOString(),
+    now: now.toISOString(),
+    activitiesThisWeek,
+    weeklyDuration,
+    weeklyActivities: weeklyActivities.map(a => ({
+      date: a.created_at.toISOString(),
+      duration: a.duration_minutes
+    }))
+  });
   
   // Get user's favorite tea type
   const teaTypeStats = await prisma.activity.groupBy({
@@ -217,7 +242,8 @@ router.get('/user/:userId', optionalAuth, asyncHandler(async (req, res) => {
     totalDuration,
     favoriteTeaType,
     activitiesThisWeek,
-    activitiesThisMonth
+    activitiesThisMonth,
+    weeklyDuration
   };
   
   successResponse(res, userStats, 'User statistics retrieved successfully');

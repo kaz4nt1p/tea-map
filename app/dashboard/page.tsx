@@ -30,12 +30,14 @@ export default function DashboardPage() {
       setStatsError(null);
       
       const token = tokenManager.getAccessToken();
+      console.log('Dashboard fetch - token available:', !!token);
       const response = await fetch('/api/stats/dashboard', {
         headers: {
           'Content-Type': 'application/json',
           ...(token && { 'Authorization': `Bearer ${token}` }),
         },
       });
+      console.log('Dashboard response status:', response.status);
       
       if (!response.ok) {
         throw new Error('Failed to fetch dashboard statistics');

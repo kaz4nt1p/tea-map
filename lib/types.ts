@@ -240,6 +240,7 @@ export interface UserStats {
   favoriteTeaType: string;
   activitiesThisWeek: number;
   activitiesThisMonth: number;
+  weeklyDuration: number; // in minutes
 }
 
 // Tea-specific types
