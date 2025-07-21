@@ -53,6 +53,7 @@ model Activity {
   title             String
   description       String?
   tea_type          String?
+  tea_name          String?
   tea_details       Json?     // brewing parameters, temperature, etc.
   mood_before       String?
   mood_after        String?

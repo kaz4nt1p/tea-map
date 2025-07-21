@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Activity, ActivityComment } from '../lib/types';
+import { Activity, ActivityComment, TEA_TYPES, MOOD_TYPES } from '../lib/types';
 import { tokenManager } from '../lib/auth';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
@@ -104,20 +104,15 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   const getTeaTypeLabel = (teaType?: string) => {
     if (!teaType) return '';
     
-    const teaLabels: { [key: string]: string } = {
-      'green': 'Зелёный чай',
-      'black': 'Чёрный чай',
-      'white': 'Белый чай',
-      'oolong': 'Улун',
-      'pu-erh': 'Пуэр',
-      'sencha': 'Сенча',
-      'matcha': 'Матча',
-      'chai': 'Чай',
-      'herbal': 'Травяной',
-      'other': 'Другое'
-    };
+    const teaTypeInfo = TEA_TYPES.find(t => t.value === teaType);
+    return teaTypeInfo ? teaTypeInfo.label : teaType;
+  };
+
+  const getMoodLabel = (mood?: string) => {
+    if (!mood) return '';
     
-    return teaLabels[teaType] || teaType;
+    const moodInfo = MOOD_TYPES.find(m => m.value === mood);
+    return moodInfo ? moodInfo.label : mood;
   };
 
   return (
@@ -152,7 +147,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         {activity.tea_type && (
           <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
             <span className="mr-1">{getTeaTypeIcon(activity.tea_type)}</span>
-            <span>{getTeaTypeLabel(activity.tea_type)}</span>
+            <span>
+              {getTeaTypeLabel(activity.tea_type)}
+              {activity.tea_name && (
+                <span className="text-gray-500 ml-1">• {activity.tea_name}</span>
+              )}
+            </span>
           </div>
         )}
       </div>
@@ -192,7 +192,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
           {activity.mood_before && (
             <div className="flex items-center">
               <span className="mr-1">🧘</span>
-              <span>{activity.mood_before}</span>
+              <span>{getMoodLabel(activity.mood_before)}</span>
             </div>
           )}
         </div>

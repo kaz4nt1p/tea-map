@@ -25,6 +25,7 @@ export interface Activity {
   title: string;
   description?: string;
   tea_type?: string;
+  tea_name?: string;
   tea_details?: {
     brewing_temperature?: number;
     steeping_time?: number;
@@ -174,6 +175,7 @@ export interface CreateActivityRequest {
   title: string;
   description?: string;
   tea_type?: string;
+  tea_name?: string;
   tea_details?: {
     brewing_temperature?: number;
     steeping_time?: number;
@@ -233,6 +235,12 @@ export interface CommunityStats {
   newSpotsThisWeek: number;
 }
 
+export interface TeaPreference {
+  type: string;
+  count: number;
+  percentage: number;
+}
+
 export interface UserStats {
   totalActivities: number;
   totalSpots: number;
@@ -241,6 +249,7 @@ export interface UserStats {
   activitiesThisWeek: number;
   activitiesThisMonth: number;
   weeklyDuration: number; // in minutes
+  teaPreferences: TeaPreference[];
 }
 
 // Tea-specific types

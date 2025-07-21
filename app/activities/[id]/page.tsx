@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Activity, ApiResponse, User } from '../../../lib/types';
+import { Activity, ApiResponse, User, TEA_TYPES, MOOD_TYPES } from '../../../lib/types';
 import { useAuth } from '../../../contexts/AuthContext';
 import { tokenManager } from '../../../lib/auth';
 import { formatDistanceToNow } from 'date-fns';
@@ -187,6 +187,20 @@ export default function ActivityDetailPage() {
     return teaEmojis[teaType] || '🍵';
   };
 
+  const getTeaTypeLabel = (teaType?: string) => {
+    if (!teaType) return '';
+    
+    const teaTypeInfo = TEA_TYPES.find(t => t.value === teaType);
+    return teaTypeInfo ? teaTypeInfo.label : teaType;
+  };
+
+  const getMoodLabel = (mood?: string) => {
+    if (!mood) return '';
+    
+    const moodInfo = MOOD_TYPES.find(m => m.value === mood);
+    return moodInfo ? moodInfo.label : mood;
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -310,7 +324,12 @@ export default function ActivityDetailPage() {
             {activity.tea_type && (
               <div className="ml-auto flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
                 <span className="mr-1">{getTeaTypeIcon(activity.tea_type)}</span>
-                <span>{activity.tea_type}</span>
+                <span>
+                  {getTeaTypeLabel(activity.tea_type)}
+                  {activity.tea_name && (
+                    <span className="text-gray-500 ml-1">• {activity.tea_name}</span>
+                  )}
+                </span>
               </div>
             )}
           </div>
@@ -375,7 +394,7 @@ export default function ActivityDetailPage() {
                       <div className="text-sm text-gray-600 mb-1">До</div>
                       <div className="flex items-center">
                         <span className="mr-2">🧘</span>
-                        <span>{activity.mood_before}</span>
+                        <span>{getMoodLabel(activity.mood_before)}</span>
                       </div>
                     </div>
                   )}
@@ -384,7 +403,7 @@ export default function ActivityDetailPage() {
                       <div className="text-sm text-gray-600 mb-1">После</div>
                       <div className="flex items-center">
                         <span className="mr-2">✨</span>
-                        <span>{activity.mood_after}</span>
+                        <span>{getMoodLabel(activity.mood_after)}</span>
                       </div>
                     </div>
                   )}

@@ -143,6 +143,7 @@ export default function EditActivityPage() {
     title: activity.title,
     description: activity.description || '',
     tea_type: activity.tea_type || '',
+    tea_name: activity.tea_name || '',
     tea_details: activity.tea_details ? {
       ...activity.tea_details,
       brewing_temperature: activity.tea_details.brewing_temperature ? Number(activity.tea_details.brewing_temperature) : undefined,

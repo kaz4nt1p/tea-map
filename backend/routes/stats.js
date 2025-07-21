@@ -236,6 +236,17 @@ router.get('/user/:userId', authenticateToken, asyncHandler(async (req, res) => 
   
   const favoriteTeaType = teaTypeStats.length > 0 ? teaTypeStats[0].tea_type : '';
   
+  // Calculate tea preferences with percentages
+  const teaPreferences = teaTypeStats.map(stat => {
+    const count = stat._count.tea_type;
+    const percentage = totalActivities > 0 ? Math.round((count / totalActivities) * 100) : 0;
+    return {
+      type: stat.tea_type,
+      count,
+      percentage
+    };
+  });
+  
   const userStats = {
     totalActivities,
     totalSpots,
@@ -243,7 +254,8 @@ router.get('/user/:userId', authenticateToken, asyncHandler(async (req, res) => 
     favoriteTeaType,
     activitiesThisWeek,
     activitiesThisMonth,
-    weeklyDuration
+    weeklyDuration,
+    teaPreferences
   };
   
   successResponse(res, userStats, 'User statistics retrieved successfully');

@@ -142,7 +142,7 @@ const UserMenu: React.FC = () => {
                     Профиль
                   </Button>
                   
-                  <Button
+                  {/* <Button
                     variant="outline"
                     className="w-full justify-start text-forest-700 border-tea-200 bg-white hover:bg-tea-50"
                     onClick={() => setIsOpen(false)}
@@ -152,7 +152,7 @@ const UserMenu: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Настройки
-                  </Button>
+                  </Button> */}
                   
                   <Button
                     variant="outline"

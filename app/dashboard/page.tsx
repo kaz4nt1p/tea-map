@@ -311,7 +311,7 @@ export default function DashboardPage() {
                           <div className="text-xs text-gray-500">Споты</div>
                         </div>
                         <div>
-                          <div className="text-lg font-semibold text-gray-900">8</div>
+                          <div className="text-lg font-semibold text-gray-900">0</div>
                           <div className="text-xs text-gray-500">Друзья</div>
                         </div>
                       </>
