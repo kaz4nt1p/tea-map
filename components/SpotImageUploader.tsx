@@ -23,7 +23,7 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
     setUploading(true);
     const uploadPromise = async () => {
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('image', file);
 
       const token = tokenManager.getAccessToken();
       const response = await fetch('/api/upload', {
