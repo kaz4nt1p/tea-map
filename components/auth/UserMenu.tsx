@@ -85,8 +85,7 @@ const UserMenu: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="fixed right-4 mt-2 w-64 z-[9999]"
-            style={{ top: '80px' }}
+            className="absolute right-0 mt-2 w-64 z-[9999]"
           >
             <Card className="shadow-xl border-tea-200 bg-white/95 backdrop-blur-md border-2 rounded-xl">
               <CardContent className="p-4">
