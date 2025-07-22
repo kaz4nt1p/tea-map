@@ -5,7 +5,7 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:300
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    const file = formData.get('file') as File;
+    const file = (formData.get('file') || formData.get('image')) as File;
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });

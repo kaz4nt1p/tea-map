@@ -124,6 +124,11 @@ const createActivitySchema = Joi.object({
     .max(100)
     .optional()
     .allow(''),
+
+  tea_name: Joi.string()
+    .max(200)
+    .optional()
+    .allow(''),
   
   tea_details: Joi.object()
     .optional(),
@@ -162,6 +167,15 @@ const createActivitySchema = Joi.object({
   companions: Joi.array()
     .items(Joi.string())
     .optional(),
+
+  photos: Joi.array()
+    .items(Joi.string().uri())
+    .max(5)
+    .optional()
+    .messages({
+      'array.max': 'Maximum 5 photos are allowed',
+      'string.uri': 'Each photo must be a valid URL'
+    }),
   
   privacy_level: Joi.string()
     .valid('public', 'friends', 'private')

@@ -156,6 +156,7 @@ export default function EditActivityPage() {
     duration_minutes: activity.duration_minutes ? Number(activity.duration_minutes) : undefined,
     weather_conditions: activity.weather_conditions || '',
     companions: activity.companions || [],
+    photos: activity.media?.map(m => m.file_path) || [],
     privacy_level: activity.privacy_level,
     spot_id: activity.spot_id
   };

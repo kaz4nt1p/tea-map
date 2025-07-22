@@ -5,6 +5,7 @@ import { CreateActivityRequest, Spot, TEA_TYPES, MOOD_TYPES } from '../lib/types
 import { Spot as LegacySpot } from '../lib/spots';
 import { SpotSelector } from './SpotSelector';
 import SpotImageUploader from './SpotImageUploader';
+import ActivityPhotoUploader from './ActivityPhotoUploader';
 import { X, Clock, Thermometer, Timer, Users, Cloud, Leaf, MessageSquare } from 'lucide-react';
 
 interface ActivityFormProps {
@@ -37,6 +38,7 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
     duration_minutes: undefined,
     weather_conditions: '',
     companions: [],
+    photos: [],
     privacy_level: 'public',
     spot_id: initialSpot?.id
   });
@@ -59,6 +61,14 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
   const [selectedSpot, setSelectedSpot] = useState<Spot | null>(convertedInitialSpot);
   const [showSpotForm, setShowSpotForm] = useState(false);
   const [companionInput, setCompanionInput] = useState('');
+  const [photos, setPhotos] = useState<{ url: string; publicId: string; thumbnail?: string }[]>(
+    // Initialize with existing photos from initialData
+    initialData?.photos?.map(photoUrl => ({
+      url: photoUrl,
+      publicId: photoUrl.split('/').pop()?.split('.')[0] || '', // Extract from URL
+      thumbnail: photoUrl
+    })) || []
+  );
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const validateForm = () => {
@@ -88,6 +98,7 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
     const activityData = {
       ...formData,
       spot_id: selectedSpot?.id,
+      photos: photos.map(photo => photo.url),
     };
     
     await onSubmit(activityData);
@@ -213,6 +224,13 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
             selectedSpot={selectedSpot}
             onSpotSelect={setSelectedSpot}
             onCreateSpot={() => setShowSpotForm(true)}
+          />
+
+          {/* Photo Upload */}
+          <ActivityPhotoUploader
+            photos={photos}
+            onPhotosChange={setPhotos}
+            maxPhotos={5}
           />
 
           {/* Description */}

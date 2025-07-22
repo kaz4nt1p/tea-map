@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { AvatarImage } from '../../../components/AvatarImage';
 import { CommentSection } from '../../../components/CommentSection';
+import { ActivityPhotoGrid } from '../../../components/ActivityPhotoGrid';
 
 export default function ActivityDetailPage() {
   const params = useParams();
@@ -412,13 +413,14 @@ export default function ActivityDetailPage() {
             )}
           </div>
 
-          {/* Activity photo */}
+          {/* Activity photos */}
           {activity.media && activity.media.length > 0 && (
-            <div className="aspect-video bg-gray-100 overflow-hidden">
-              <img 
-                src={activity.media[0].file_path} 
-                alt={activity.media[0].alt_text || activity.title}
-                className="w-full h-full object-cover"
+            <div className="p-6 pt-0">
+              <ActivityPhotoGrid 
+                photos={activity.media}
+                onPhotoClick={(photoIndex) => {
+                  console.log(`Viewed photo ${photoIndex + 1} of activity ${activity.id}`);
+                }}
               />
             </div>
           )}

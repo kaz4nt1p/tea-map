@@ -189,6 +189,7 @@ export interface CreateActivityRequest {
   duration_minutes?: number;
   weather_conditions?: string;
   companions?: string[];
+  photos?: string[]; // Array of photo URLs
   privacy_level?: 'public' | 'friends' | 'private';
 }
 

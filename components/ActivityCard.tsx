@@ -8,6 +8,7 @@ import { ru } from 'date-fns/locale';
 import { Heart, MessageCircle, MapPin, Clock, User, Leaf } from 'lucide-react';
 import { AvatarImage } from './AvatarImage';
 import { TeaIconFilled } from './TeaIcon';
+import { ActivityPhotoGrid } from './ActivityPhotoGrid';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -198,13 +199,15 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         </div>
       </div>
 
-      {/* Activity photo */}
+      {/* Activity photos */}
       {activity.media && activity.media.length > 0 && (
-        <div className="aspect-video bg-gray-100 overflow-hidden">
-          <img 
-            src={activity.media[0].file_path} 
-            alt={activity.media[0].alt_text || activity.title}
-            className="w-full h-full object-cover"
+        <div className="mb-4">
+          <ActivityPhotoGrid 
+            photos={activity.media}
+            onPhotoClick={(photoIndex) => {
+              // Optional: Track photo viewing analytics
+              console.log(`Viewed photo ${photoIndex + 1} of activity ${activity.id}`);
+            }}
           />
         </div>
       )}
