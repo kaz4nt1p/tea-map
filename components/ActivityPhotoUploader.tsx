@@ -2,8 +2,9 @@
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
-import { tokenManager } from "../lib/auth";
+import { authUtils } from "../lib/auth";
 import { X, Plus, Upload, Image as ImageIcon } from "lucide-react";
+import apiClient from "../lib/api";
 
 interface UploadedPhoto {
   url: string;
@@ -52,25 +53,16 @@ export default function ActivityPhotoUploader({
       const formData = new FormData();
       formData.append('file', file);
 
-      const token = tokenManager.getAccessToken();
-      const response = await fetch('/api/upload', {
-        method: 'POST',
+      const response = await apiClient.post('/api/upload', formData, {
         headers: {
-          ...(token && { 'Authorization': `Bearer ${token}` }),
+          'Content-Type': 'multipart/form-data',
         },
-        body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка загрузки');
-      }
-
-      const data = await response.json();
       return {
-        url: data.url,
-        publicId: data.publicId,
-        thumbnail: data.thumbnails?.medium || data.url
+        url: response.data.url,
+        publicId: response.data.publicId,
+        thumbnail: response.data.thumbnails?.medium || response.data.url
       };
     });
 
@@ -81,7 +73,7 @@ export default function ActivityPhotoUploader({
       toast.success(`Загружено ${uploadedPhotos.length} фото`);
     } catch (error: any) {
       console.error('Upload error:', error);
-      toast.error('Ошибка загрузки фотографий');
+      toast.error(error.message || 'Ошибка загрузки фотографий');
     } finally {
       setUploading(false);
     }
@@ -144,7 +136,11 @@ export default function ActivityPhotoUploader({
                 className="w-full h-full object-cover"
               />
               <button
-                onClick={() => removePhoto(index)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  removePhoto(index);
+                }}
                 className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
                 aria-label="Удалить фото"
               >

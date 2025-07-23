@@ -78,6 +78,13 @@ This is a **Tea Map** application evolving into a **Social Tea Activity Platform
 - Environment configuration for production vs development
 - Database schema migration for OAuth fields (google_id, auth_provider)
 
+**Phase 3.9: Authentication Token Handling Fix (✅ Completed)**
+- Fixed token expiration issues after user inactivity (15+ minutes)
+- Replaced all direct `fetch()` calls with `apiClient` for automatic token refresh
+- Resolved navigation errors between dashboard/map/profile requiring page refresh
+- Implemented transparent token refresh without user interruption
+- Standardized error handling across all components
+
 **Phase 4: Advanced Features (🎯 Future)**
 - Real-time WebSocket connections
 - Push notification system
@@ -162,6 +169,50 @@ npx prisma generate                    # Regenerate client
 - **Port Configuration**: Frontend runs on 3000, backend on 3002 (not 3001)
 - **SSL Issues**: Restart nginx after config changes: `systemctl restart nginx`
 
+## Authentication & Token Management
+
+### Token Expiration Fix (✅ Completed - January 23, 2025)
+**Problem Solved**: Fixed authentication errors after 15+ minutes of user inactivity that previously required page refresh to resolve.
+
+**Solution Implemented**: Replaced all direct `fetch()` calls with the existing `apiClient` that has automatic token refresh interceptors.
+
+### Authentication Architecture
+- **Token Storage**: Access tokens in `sessionStorage`, user data in `localStorage`
+- **Token Expiry**: 15-minute access tokens, 7-day refresh tokens (backend)
+- **Refresh Mechanism**: Axios interceptor in `/lib/api.ts` with automatic retry on 401
+- **✅ Fixed**: All components now use `apiClient` for seamless token refresh
+
+### Components Fixed (9 total)
+**High Priority:**
+- `components/ActivityList.tsx` - Activity feed pagination → `apiClient.get()`
+- `app/dashboard/page.tsx` - Dashboard stats and activity creation → `apiClient.get()` + `activitiesApi.createActivity()`
+- `app/profile/page.tsx` - Profile stats and activities → `apiClient.get()` + `activitiesApi.createActivity()`
+- `components/CommentSection.tsx` - Comment CRUD operations → `activitiesApi` functions
+
+**Medium Priority:**
+- `components/ActivityCard.tsx` - Like/unlike functionality → `activitiesApi.toggleLike()`
+- `components/SpotSelector.tsx` - Spot search → `apiClient.get()`  
+- `components/ActivityPhotoUploader.tsx` - Photo upload → `apiClient.post()`
+- `components/SpotImageUploader.tsx` - Image upload → `apiClient.post()`
+- `app/map/page.tsx` - Activity creation from map → `activitiesApi.createActivity()`
+
+### User Experience Improvements
+- ✅ Navigate between dashboard/map/profile pages seamlessly after inactivity
+- ✅ Create new activities via "Записать сессию" button without 401 errors
+- ✅ Upload photos during activity creation without authentication issues
+- ✅ Like activities, add comments, and search spots without interruption
+- ✅ Transparent token refresh happens automatically behind the scenes
+
+### Testing Token Refresh
+```bash
+# Verified token expiration scenarios work correctly:
+# 1. Login to application
+# 2. Wait 15+ minutes without activity  
+# 3. Navigate between dashboard -> map -> profile -> dashboard
+# 4. ✅ Works seamlessly without page refresh or 401 errors
+# 5. ✅ All user interactions work after timeout (activities, comments, uploads)
+```
+
 ## Memory Management
 
 ### Project Interactions
@@ -170,3 +221,14 @@ npx prisma generate                    # Regenerate client
 - **Domain & SSL**: teamap.duckdns.org configured with Let's Encrypt SSL certificate
 - **Google OAuth Setup**: Requires /callback suffix in redirect URIs configuration
 - **Process Management**: PM2 configured for auto-restart with saved configuration
+- **Authentication Issue Identified**: January 22, 2025 - Token expiration causing navigation errors
+- **Token Expiration Fix Completed**: January 23, 2025 - Comprehensive fix across 9 components
+- **Photo Upload Fix**: Enhanced ActivityPhotoUploader with better token expiration handling
+- **Photo Display Optimization**: Improved ActivityPhotoGrid sizing for better activity list appearance
+
+### Latest Technical Improvements (January 23, 2025)
+- **Authentication Stability**: Complete token refresh implementation across all user-facing components
+- **Code Consistency**: Eliminated direct `fetch()` calls in favor of standardized `apiClient` usage
+- **Error Handling**: Unified error handling patterns across the application
+- **User Experience**: Seamless navigation and interaction after extended periods of inactivity
+- **Maintainability**: Centralized authentication logic reduces code duplication and bugs

@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { Activity, ActivityComment, TEA_TYPES, MOOD_TYPES } from '../lib/types';
-import { tokenManager } from '../lib/auth';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Heart, MessageCircle, MapPin, Clock, User, Leaf } from 'lucide-react';
 import { AvatarImage } from './AvatarImage';
 import { TeaIconFilled } from './TeaIcon';
 import { ActivityPhotoGrid } from './ActivityPhotoGrid';
+import { activitiesApi } from '../lib/api';
 
 interface ActivityCardProps {
   activity: Activity;
@@ -40,29 +40,20 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     
     setIsLiking(true);
     try {
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`/api/activities/${activity.id}/like`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
+      const response = await activitiesApi.toggleLike(activity.id);
+      console.log('Like toggle response:', response);
       
-      if (response.ok) {
-        const responseData = await response.json();
-        const previousLiked = isLiked;
-        const newLikedState = responseData.data.liked;
-        setIsLiked(newLikedState);
-        
-        // Update count based on the change in liked state
-        if (newLikedState && !previousLiked) {
-          // User just liked the activity
-          setLikeCount(prev => prev + 1);
-        } else if (!newLikedState && previousLiked) {
-          // User just unliked the activity
-          setLikeCount(prev => prev - 1);
-        }
+      const previousLiked = isLiked;
+      const newLikedState = response.liked;
+      setIsLiked(newLikedState);
+      
+      // Update count based on the change in liked state
+      if (newLikedState && !previousLiked) {
+        // User just liked the activity
+        setLikeCount(prev => prev + 1);
+      } else if (!newLikedState && previousLiked) {
+        // User just unliked the activity
+        setLikeCount(prev => prev - 1);
       }
     } catch (error) {
       console.error('Error liking activity:', error);

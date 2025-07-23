@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Spot, ApiResponse } from '../lib/types';
-import { tokenManager } from '../lib/auth';
 import { Search, MapPin, Plus, Loader2 } from 'lucide-react';
+import apiClient from '../lib/api';
 
 interface SpotSelectorProps {
   selectedSpot?: Spot | null;
@@ -32,23 +32,14 @@ export const SpotSelector: React.FC<SpotSelectorProps> = ({
     setError(null);
     
     try {
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`/api/spots${search ? `?search=${encodeURIComponent(search)}` : ''}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
-      const data: ApiResponse<{ spots: Spot[] }> = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch spots');
-      }
+      const response = await apiClient.get(`/api/spots${search ? `?search=${encodeURIComponent(search)}` : ''}`);
+      const data = response.data;
       
       if (data.data) {
         setSpots(data.data.spots);
       }
     } catch (err) {
+      console.error('Error fetching spots:', err);
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setLoading(false);

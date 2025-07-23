@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, ApiResponse, PaginatedResponse } from '../lib/types';
 import { ActivityCard } from './ActivityCard';
-import { tokenManager } from '../lib/auth';
 import { useRouter } from 'next/navigation';
 import { Loader2, RefreshCw } from 'lucide-react';
+import apiClient from '../lib/api';
 
 interface ActivityListProps {
   activities?: Activity[];
@@ -46,33 +46,11 @@ export const ActivityList: React.FC<ActivityListProps> = ({
     
     try {
       console.log('Fetching activities from:', `${endpoint}?page=${pageNum}&limit=${limit}`);
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`${endpoint}?page=${pageNum}&limit=${limit}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
       
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
+      const response = await apiClient.get(`${endpoint}?page=${pageNum}&limit=${limit}`);
+      const data = response.data;
       
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
-      
-      let data: ApiResponse<PaginatedResponse<Activity>>;
-      try {
-        data = JSON.parse(responseText);
-      } catch (parseError) {
-        console.error('Failed to parse JSON:', parseError);
-        throw new Error(`Invalid JSON response: ${responseText.substring(0, 200)}...`);
-      }
-      
-      if (!response.ok) {
-        console.error('Response not ok:', response.status, response.statusText);
-        console.error('Error data:', data);
-        throw new Error(data.error || data.message || `HTTP ${response.status}: ${response.statusText}`);
-      }
+      console.log('Response data:', data);
       
       if (data.data) {
         console.log('Data structure:', data.data);

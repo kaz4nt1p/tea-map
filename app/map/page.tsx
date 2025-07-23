@@ -9,9 +9,8 @@ import ActivityForm from '../../components/ActivityForm';
 import UserMenu from '../../components/auth/UserMenu';
 import { Spot } from '../../lib/spots';
 import { CreateActivityRequest } from '../../lib/types';
-import { tokenManager } from '../../lib/auth';
 import { useRequireAuth } from '../../hooks/useAuth';
-import { spotsApi, CreateSpotData } from '../../lib/api';
+import { spotsApi, CreateSpotData, activitiesApi } from '../../lib/api';
 import toast from 'react-hot-toast';
 
 function MapPageContent() {
@@ -136,24 +135,10 @@ function MapPageContent() {
     
     setLoading(true);
     try {
-      const token = tokenManager.getAccessToken();
-      console.log('Token available:', !!token);
       console.log('Activity data:', activityData);
       
-      const response = await fetch('/api/activities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-        body: JSON.stringify(activityData),
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Activity creation error:', response.status, errorText);
-        throw new Error(`Failed to create activity: ${response.status} - ${errorText}`);
-      }
+      const result = await activitiesApi.createActivity(activityData);
+      console.log('Activity created successfully:', result);
 
       setActivitySpot(null);
       toast.success('Чайная сессия записана!');

@@ -5,10 +5,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ActivityList } from '../../components/ActivityList';
 import { ActivityForm } from '../../components/ActivityForm';
 import { CreateActivityRequest, DashboardStats, PopularSpot, WeeklyStats, UserStats } from '../../lib/types';
-import { tokenManager } from '../../lib/auth';
 import { Feather, TrendingUp, Users, MapPin, Calendar, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { AvatarImage } from '../../components/AvatarImage';
+import apiClient, { activitiesApi } from '../../lib/api';
 
 export default function DashboardPage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -37,43 +37,22 @@ export default function DashboardPage() {
       setStatsLoading(true);
       setStatsError(null);
       
-      const token = tokenManager.getAccessToken();
-      console.log('Dashboard fetch - token available:', !!token);
+      console.log('Fetching dashboard stats...');
       
-      const response = await fetch('/api/stats/dashboard', {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
+      const response = await apiClient.get('/api/stats/dashboard');
+      const data = response.data;
       
-      console.log('Dashboard response status:', response.status);
-      console.log('Dashboard response headers:', Object.fromEntries(response.headers.entries()));
-      
-      if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        try {
-          const errorData = await response.text();
-          console.error('Dashboard API error response:', errorData);
-          errorMessage += ` - ${errorData}`;
-        } catch (e) {
-          console.error('Could not read error response:', e);
-        }
-        throw new Error(`Failed to fetch dashboard statistics - ${errorMessage}`);
-      }
-      
-      const data = await response.json();
       console.log('Dashboard data received:', data);
       setDashboardStats(data.data);
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
       
       // More specific error messages
-      if (error.message.includes('fetch')) {
+      if (error.code === 'NETWORK_ERROR') {
         setStatsError('Network error - check connection to backend');
-      } else if (error.message.includes('401')) {
+      } else if (error.response?.status === 401) {
         setStatsError('Authentication error - please try logging in again');
-      } else if (error.message.includes('500')) {
+      } else if (error.response?.status === 500) {
         setStatsError('Server error - please try again later');
       } else {
         setStatsError(`Failed to load statistics: ${error.message}`);
@@ -94,42 +73,22 @@ export default function DashboardPage() {
       setUserStatsLoading(true);
       setUserStatsError(null);
       
-      const token = tokenManager.getAccessToken();
-      console.log('User stats fetch - token available:', !!token, 'user ID:', user.id);
+      console.log('User stats fetch - user ID:', user.id);
       
-      const response = await fetch(`/api/stats/user/${user.id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
+      const response = await apiClient.get(`/api/stats/user/${user.id}`);
+      const data = response.data;
       
-      console.log('User stats response status:', response.status);
-      
-      if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        try {
-          const errorData = await response.text();
-          console.error('User stats API error response:', errorData);
-          errorMessage += ` - ${errorData}`;
-        } catch (e) {
-          console.error('Could not read user stats error response:', e);
-        }
-        throw new Error(`Failed to fetch user statistics - ${errorMessage}`);
-      }
-      
-      const data = await response.json();
       console.log('User stats data received:', data);
       setUserStats(data.data);
     } catch (error) {
       console.error('Error fetching user stats:', error);
       
       // More specific error messages
-      if (error.message.includes('fetch')) {
+      if (error.code === 'NETWORK_ERROR') {
         setUserStatsError('Network error - check connection to backend');
-      } else if (error.message.includes('401')) {
+      } else if (error.response?.status === 401) {
         setUserStatsError('Authentication error - please try logging in again');
-      } else if (error.message.includes('500')) {
+      } else if (error.response?.status === 500) {
         setUserStatsError('Server error - please try again later');
       } else {
         setUserStatsError(`Failed to load statistics: ${error.message}`);
@@ -164,25 +123,7 @@ export default function DashboardPage() {
     try {
       console.log('Creating activity with data:', activityData);
       
-      const token = tokenManager.getAccessToken();
-      const response = await fetch('/api/activities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-        body: JSON.stringify(activityData),
-      });
-
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`Failed to create activity: ${response.status} - ${errorText}`);
-      }
-
-      const result = await response.json();
+      const result = await activitiesApi.createActivity(activityData);
       console.log('Activity created successfully:', result);
       
       setShowActivityForm(false);
@@ -266,7 +207,7 @@ export default function DashboardPage() {
                         <h3 className="font-semibold text-gray-900">
                           {user.display_name || user.username}
                         </h3>
-                        {user.auth_provider !== 'google' && (
+                        {user.username && (
                           <p className="text-sm text-gray-500">
                             @{user.username}
                           </p>

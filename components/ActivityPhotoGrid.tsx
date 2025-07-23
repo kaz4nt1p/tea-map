@@ -122,7 +122,7 @@ export const ActivityPhotoGrid: React.FC<ActivityPhotoGridProps> = ({
   if (photos.length === 1) {
     return (
       <>
-        <div className="aspect-video bg-gray-100 overflow-hidden rounded-lg cursor-pointer">
+        <div className="aspect-[3/2] bg-gray-100 overflow-hidden rounded-lg cursor-pointer">
           <img
             src={photos[0].file_path}
             alt={photos[0].alt_text || 'Activity photo'}
@@ -147,7 +147,7 @@ export const ActivityPhotoGrid: React.FC<ActivityPhotoGridProps> = ({
   if (photos.length === 2) {
     return (
       <>
-        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden aspect-video">
+        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden aspect-[3/2]">
           {photos.map((photo, index) => (
             <div
               key={photo.id}
@@ -179,7 +179,7 @@ export const ActivityPhotoGrid: React.FC<ActivityPhotoGridProps> = ({
   if (photos.length === 3) {
     return (
       <>
-        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden aspect-video">
+        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden aspect-[3/2]">
           {/* Large photo on left */}
           <div
             className="relative bg-gray-100 cursor-pointer overflow-hidden row-span-2"
@@ -224,7 +224,7 @@ export const ActivityPhotoGrid: React.FC<ActivityPhotoGridProps> = ({
   if (photos.length === 4) {
     return (
       <>
-        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden aspect-video">
+        <div className="grid grid-cols-2 gap-1 rounded-lg overflow-hidden aspect-[3/2]">
           {photos.map((photo, index) => (
             <div
               key={photo.id}
@@ -257,7 +257,7 @@ export const ActivityPhotoGrid: React.FC<ActivityPhotoGridProps> = ({
   
   return (
     <>
-      <div className="grid grid-cols-4 gap-1 rounded-lg overflow-hidden aspect-video">
+      <div className="grid grid-cols-4 gap-1 rounded-lg overflow-hidden aspect-[3/2]">
         {/* Two large photos on top row */}
         {photos.slice(0, 2).map((photo, index) => (
           <div

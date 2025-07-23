@@ -5,8 +5,9 @@ import { ActivityComment } from '../lib/types';
 import { CommentForm } from './CommentForm';
 import { CommentItem } from './CommentItem';
 import { MessageSquare, ChevronDown, ChevronUp, MessageCircle } from 'lucide-react';
-import { authUtils, tokenManager } from '../lib/auth';
+import { authUtils } from '../lib/auth';
 import { AvatarImage } from './AvatarImage';
+import { activitiesApi } from '../lib/api';
 
 interface CommentSectionProps {
   activityId: string;
@@ -42,30 +43,13 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
   const fetchComments = async (pageNum = 1) => {
     try {
       setIsLoading(true);
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`/api/activities/${activityId}/comments?page=${pageNum}&limit=10`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
-        }
-      });
       
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Failed to fetch comments:', {
-          status: response.status,
-          error: errorData
-        });
-        throw new Error(errorData.error || 'Failed to fetch comments');
-      }
+      const response = await activitiesApi.getComments(activityId, pageNum, 10);
+      console.log('Comments API response:', response);
       
-      const data = await response.json();
-      console.log('Comments API response:', data);
-      
-      // Handle the nested response structure from backend
-      const responseData = data.data || data;
-      const commentsData = responseData.data || responseData;
-      const paginationData = responseData.pagination || {};
+      // Handle the response structure from activitiesApi
+      const commentsData = response.data;
+      const paginationData = response.pagination;
       
       if (pageNum === 1) {
         setComments(Array.isArray(commentsData) ? commentsData : []);
@@ -84,38 +68,16 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   const handleCreateComment = async (content: string) => {
     try {
-      const token = tokenManager.getAccessToken();
-      console.log('Creating comment with token:', token ? 'Present' : 'Missing');
-      
-      if (!token) {
+      const currentUser = authUtils.getCurrentUser();
+      if (!currentUser) {
         throw new Error('You must be logged in to comment');
       }
       
-      const response = await fetch(`/api/activities/${activityId}/comments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
-        },
-        body: JSON.stringify({ content })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Comment creation failed:', {
-          status: response.status,
-          statusText: response.statusText,
-          error: errorData,
-          token: token ? 'Present' : 'Missing'
-        });
-        throw new Error(errorData.error || `Failed to create comment (${response.status})`);
-      }
-
-      const data = await response.json();
-      console.log('Comment creation response:', data);
+      const response = await activitiesApi.createComment(activityId, content);
+      console.log('Comment creation response:', response);
       
-      // Handle the response structure from backend
-      const newComment = data.comment || data.data?.comment || data;
+      // Handle the response structure from activitiesApi
+      const newComment = response.comment;
       setComments(prev => [...prev, newComment]);
       const newCount = totalComments + 1;
       setTotalComments(newCount);
@@ -133,23 +95,12 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   const handleEditComment = async (commentId: string, content: string) => {
     try {
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`/api/activities/${activityId}/comments/${commentId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
-        },
-        body: JSON.stringify({ content })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update comment');
-      }
-
-      const data = await response.json();
+      const response = await activitiesApi.updateComment(activityId, commentId, content);
+      console.log('Comment update response:', response);
+      
+      // Handle the response structure from activitiesApi
       setComments(prev => prev.map(comment => 
-        comment.id === commentId ? data.comment : comment
+        comment.id === commentId ? response.comment : comment
       ));
     } catch (error) {
       console.error('Error editing comment:', error);
@@ -159,18 +110,8 @@ export const CommentSection: React.FC<CommentSectionProps> = ({
 
   const handleDeleteComment = async (commentId: string) => {
     try {
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`/api/activities/${activityId}/comments/${commentId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` })
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete comment');
-      }
+      await activitiesApi.deleteComment(activityId, commentId);
+      console.log('Comment deleted successfully');
 
       setComments(prev => prev.filter(comment => comment.id !== commentId));
       const newCount = totalComments - 1;

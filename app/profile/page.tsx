@@ -4,11 +4,11 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { ActivityList } from '../../components/ActivityList';
 import { ActivityForm } from '../../components/ActivityForm';
-import { User, Activity, CreateActivityRequest, UserStats, TEA_TYPES } from '../../lib/types';
-import { tokenManager } from '../../lib/auth';
+import { CreateActivityRequest, UserStats, TEA_TYPES } from '../../lib/types';
 import { useRouter } from 'next/navigation';
-import { Calendar, MapPin, TrendingUp, Users, Settings, Feather, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, TrendingUp, Users, Feather, Loader2 } from 'lucide-react';
 import { AvatarImage } from '../../components/AvatarImage';
+import apiClient, { activitiesApi } from '../../lib/api';
 
 export default function ProfilePage() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -33,19 +33,9 @@ export default function ProfilePage() {
       setStatsLoading(true);
       setStatsError(null);
       
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`/api/stats/user/${user.id}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
+      const response = await apiClient.get(`/api/stats/user/${user.id}`);
+      const data = response.data;
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch user statistics');
-      }
-      
-      const data = await response.json();
       setStats(data.data);
     } catch (error) {
       console.error('Error fetching user stats:', error);
@@ -65,19 +55,8 @@ export default function ProfilePage() {
   const handleCreateActivity = async (activityData: CreateActivityRequest) => {
     setIsSubmitting(true);
     try {
-      const token = tokenManager.getAccessToken();
-      const response = await fetch('/api/activities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-        body: JSON.stringify(activityData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create activity');
-      }
+      const result = await activitiesApi.createActivity(activityData);
+      console.log('Activity created successfully:', result);
 
       setShowActivityForm(false);
       // Refresh user stats and activity list
@@ -107,47 +86,80 @@ export default function ProfilePage() {
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="py-6">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between space-y-4 lg:space-y-0">
-              <div className="flex items-center">
+            <div className="space-y-4 lg:space-y-0">
+              {/* Mobile: Stack vertically with proper spacing */}
+              <div className="flex items-center lg:hidden">
                 <AvatarImage
                   src={user.avatar_url}
                   alt={user.display_name || user.username}
-                  className="w-12 h-12 lg:w-16 lg:h-16"
-                  fallback={<Users className="w-6 h-6 lg:w-8 lg:h-8 text-white" />}
+                  className="w-12 h-12"
+                  fallback={<Users className="w-6 h-6 text-white" />}
                 />
-                <div className="ml-3 lg:ml-4">
-                  <h1 className="text-xl lg:text-2xl font-bold text-gray-900">
+                <div className="ml-3 flex-1">
+                  <h1 className="text-xl font-bold text-gray-900">
                     {user.display_name || user.username}
                   </h1>
-                  {user.auth_provider !== 'google' && (
-                    <p className="text-sm lg:text-base text-gray-600">@{user.username}</p>
+                  {user.username && (
+                    <p className="text-sm text-gray-600">@{user.username}</p>
                   )}
                   {user.bio && (
-                    <p className="text-sm lg:text-base text-gray-700 mt-1 lg:mt-2">{user.bio}</p>
+                    <p className="text-sm text-gray-700 mt-1">{user.bio}</p>
                   )}
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2 lg:space-x-3">
+              {/* Mobile: Button row with full width */}
+              <div className="flex justify-center lg:hidden">
                 <button
                   onClick={() => setShowActivityForm(true)}
-                  className="flex items-center px-3 py-2 lg:px-4 text-sm lg:text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  className="flex items-center px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
-                  <Feather className="w-4 h-4 mr-1 lg:mr-2" />
-                  <span className="hidden sm:inline">Записать сессию</span>
-                  <span className="sm:hidden">Записать</span>
+                  <Feather className="w-4 h-4 mr-2" />
+                  <span>Записать сессию</span>
                 </button>
+              </div>
+
+              {/* Desktop: Original layout */}
+              <div className="hidden lg:flex lg:items-center lg:justify-between">
+                <div className="flex items-center">
+                  <AvatarImage
+                    src={user.avatar_url}
+                    alt={user.display_name || user.username}
+                    className="w-16 h-16"
+                    fallback={<Users className="w-8 h-8 text-white" />}
+                  />
+                  <div className="ml-4">
+                    <h1 className="text-2xl font-bold text-gray-900">
+                      {user.display_name || user.username}
+                    </h1>
+                    {user.username && (
+                      <p className="text-base text-gray-600">@{user.username}</p>
+                    )}
+                    {user.bio && (
+                      <p className="text-base text-gray-700 mt-2">{user.bio}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={() => setShowActivityForm(true)}
+                    className="flex items-center px-4 py-2 text-base bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Feather className="w-4 h-4 mr-2" />
+                    <span>Записать сессию</span>
+                  </button>
                 
 {/*
 <button
   onClick={() => router.push('/profile/settings')}
-  className="flex items-center px-3 py-2 lg:px-4 text-sm lg:text-base bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+  className="flex items-center px-4 py-2 text-base bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
 >
-  <Settings className="w-4 h-4 mr-1 lg:mr-2" />
-  <span className="hidden sm:inline">Настройки</span>
-  <span className="sm:hidden">Настр.</span>
+  <Settings className="w-4 h-4 mr-2" />
+  <span>Настройки</span>
 </button>
 */}
+                </div>
               </div>
             </div>
           </div>

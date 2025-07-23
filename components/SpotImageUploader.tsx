@@ -2,7 +2,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
-import { tokenManager } from "../lib/auth";
+import apiClient from "../lib/api";
 
 export default function SpotImageUploader({ onUpload }: { onUpload: (url: string) => void }) {
   const [uploading, setUploading] = useState(false);
@@ -25,21 +25,13 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
       const formData = new FormData();
       formData.append('image', file);
 
-      const token = tokenManager.getAccessToken();
-      const response = await fetch('/api/upload', {
-        method: 'POST',
+      const response = await apiClient.post('/api/upload', formData, {
         headers: {
-          ...(token && { 'Authorization': `Bearer ${token}` }),
+          'Content-Type': 'multipart/form-data',
         },
-        body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Ошибка загрузки');
-      }
-
-      const data = await response.json();
+      const data = response.data;
       onUpload(data.url);
       
       // Log additional Cloudinary metadata for debugging
