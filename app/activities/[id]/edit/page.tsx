@@ -4,10 +4,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
-import { tokenManager } from '../../../../lib/auth';
 import { Activity, CreateActivityRequest } from '../../../../lib/types';
 import { Spot } from '../../../../lib/spots';
 import { ActivityForm } from '../../../../components/ActivityForm';
+import { activitiesApi } from '../../../../lib/api';
 import { toast } from 'react-hot-toast';
 
 export default function EditActivityPage() {
@@ -29,31 +29,10 @@ export default function EditActivityPage() {
   const fetchActivity = async () => {
     setIsLoading(true);
     try {
-      const token = tokenManager.getAccessToken();
-      console.log('Token:', token);
       console.log('Current user from auth:', user);
       
-      const response = await fetch(`/api/activities/${activityId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('Error response:', errorText);
-        throw new Error(`Failed to fetch activity: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Activity data received:', data);
-      
-      // Extract the actual activity from the nested response
-      const activity = data.data?.activity || data;
-      console.log('Extracted activity:', activity);
+      const { activity } = await activitiesApi.getActivityById(activityId);
+      console.log('Activity data received:', activity);
       
       // Check if user owns this activity
       const isOwner = user?.id === activity.user_id;
@@ -82,26 +61,10 @@ export default function EditActivityPage() {
   const handleSubmit = async (formData: CreateActivityRequest) => {
     setIsSubmitting(true);
     try {
-      const token = tokenManager.getAccessToken();
       console.log('Submitting form data:', formData);
       console.log('duration_minutes type:', typeof formData.duration_minutes, 'value:', formData.duration_minutes);
       
-      const response = await fetch(`/api/activities/${activityId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      console.log('PUT response status:', response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.log('PUT error response:', errorText);
-        throw new Error(`Failed to update activity: ${response.status} - ${errorText}`);
-      }
+      await activitiesApi.updateActivity(activityId, formData);
 
       toast.success('Activity updated successfully!');
       router.push(`/activities/${activityId}`);
