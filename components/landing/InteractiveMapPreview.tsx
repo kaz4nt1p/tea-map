@@ -14,68 +14,14 @@ export default function InteractiveMapPreview() {
   ];
 
   return (
-    <div className="w-full flex flex-col lg:flex-row gap-4 bg-gradient-to-br from-tea-50 to-tea-100 rounded-2xl p-4 shadow-lg border-2 border-tea-200">
-      {/* Spot List - similar to actual map */}
-      <div className="w-full lg:w-80 space-y-3">
-        <div className="bg-white/95 backdrop-blur-sm rounded-xl p-3 shadow-sm border border-tea-200">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">🍃</span>
-            <span className="font-semibold text-tea-800">Споты ({spots.length})</span>
-          </div>
-          
-          {/* Random spot button */}
-          <button className="w-full bg-gradient-to-r from-tea-500 to-sage-600 text-white rounded-xl px-4 py-2 text-sm font-semibold mb-3 hover:opacity-90 transition-opacity">
-            <span className="flex items-center justify-center gap-2">
-              <span>Найти лучший спот</span>
-              <span className="text-amber-200">🌿</span>
-            </span>
-          </button>
-          
-          {/* Spot list */}
-          <div className="space-y-2 max-h-48 overflow-y-auto">
-            {spots.map((spot, idx) => (
-              <motion.div
-                key={spot.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
-                className={`bg-gradient-to-r from-tea-50 to-tea-100 rounded-xl p-3 cursor-pointer transition-all duration-200 hover:shadow-md border ${
-                  activeSpot === spot.id ? 'border-tea-400 bg-tea-200' : 'border-tea-200'
-                }`}
-                onClick={() => setActiveSpot(activeSpot === spot.id ? null : spot.id)}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-tea-200 rounded-full flex items-center justify-center">
-                    <span className="text-sm">🍃</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-bold text-tea-800 text-sm truncate">
-                      {spot.name}
-                    </h3>
-                    <p className="text-xs text-tea-600 truncate">
-                      {spot.description}
-                    </p>
-                  </div>
-                  <div className="text-tea-400">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Map Preview - more realistic */}
-      <div className="flex-1 min-h-[300px] lg:min-h-[400px]">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6 }}
-          className="relative h-full bg-gradient-to-br from-green-100 to-green-200 rounded-xl shadow-lg overflow-hidden border-2 border-tea-300"
-        >
+    <div className="w-full max-w-2xl mx-auto">
+      {/* Map Preview - full width */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6 }}
+        className="relative w-full h-[400px] bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-lg overflow-hidden border-2 border-tea-300"
+      >
           {/* Map-like background with street pattern */}
           <div className="absolute inset-0">
             <svg className="w-full h-full" viewBox="0 0 400 300">
@@ -109,10 +55,10 @@ export default function InteractiveMapPreview() {
               onClick={() => setActiveSpot(activeSpot === spot.id ? null : spot.id)}
             >
               {/* Tea cup icon similar to actual map markers */}
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 ${
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 ${
                 activeSpot === spot.id 
-                  ? 'bg-amber-400 text-white ring-4 ring-amber-200 scale-110' 
-                  : 'bg-tea-500 text-white hover:bg-tea-600'
+                  ? 'bg-amber-400 text-white ring-4 ring-amber-200/50 scale-110' 
+                  : 'bg-tea-500 text-white hover:bg-tea-600 hover:shadow-2xl'
               }`}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M7,3H17A1,1 0 0,1 18,4V8A6,6 0 0,1 12,14A6,6 0 0,1 6,8V4A1,1 0 0,1 7,3M7,5V8A4,4 0 0,0 11,12H13A4,4 0 0,0 17,8V5H7M5,9V12A8,8 0 0,0 12,20A8,8 0 0,0 19,12V9H21V12A10,10 0 0,1 12,22A10,10 0 0,1 2,12V9H5Z"/>
@@ -126,11 +72,11 @@ export default function InteractiveMapPreview() {
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                    className="absolute bottom-12 left-1/2 transform -translate-x-1/2 bg-white px-3 py-2 rounded-lg shadow-lg text-xs font-medium text-forest-800 whitespace-nowrap border border-tea-200 min-w-max"
+                    className="absolute bottom-14 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm px-4 py-3 rounded-xl shadow-xl text-sm font-medium text-forest-800 whitespace-nowrap border border-tea-200/50 min-w-max"
                   >
-                    <div className="font-semibold">{spot.name}</div>
-                    <div className="text-tea-600">{spot.description}</div>
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
+                    <div className="font-bold text-tea-700 mb-1">{spot.name}</div>
+                    <div className="text-tea-600 text-xs">{spot.description}</div>
+                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-6 border-r-6 border-t-6 border-transparent border-t-white/95"></div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -140,14 +86,14 @@ export default function InteractiveMapPreview() {
           {/* Welcome message when no spot selected */}
           {!activeSpot && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm border border-tea-200 rounded-xl shadow-lg px-3 py-2 max-w-xs"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm border border-tea-200/50 rounded-xl shadow-xl px-4 py-3 max-w-xs"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🗺️</span>
+              <div className="flex items-center gap-3">
+                <span className="text-xl">🗺️</span>
                 <div>
-                  <h3 className="text-xs font-semibold text-tea-800">Исследуйте карту</h3>
+                  <h3 className="text-sm font-bold text-tea-800">Исследуйте карту</h3>
                   <p className="text-xs text-tea-600">
                     Нажмите на маркеры чая
                   </p>
@@ -156,7 +102,13 @@ export default function InteractiveMapPreview() {
             </motion.div>
           )}
         </motion.div>
-      </div>
+        
+        {/* Caption below map */}
+        <div className="mt-4 text-center">
+          <p className="text-sm text-sage-600">
+            {activeSpot ? `Выбрано: ${spots.find(s => s.id === activeSpot)?.name}` : "Нажмите на маркеры чая для исследования"}
+          </p>
+        </div>
     </div>
   );
 }
