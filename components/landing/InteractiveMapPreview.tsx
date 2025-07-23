@@ -72,20 +72,20 @@ export default function InteractiveMapPreview() {
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                    className={`absolute bg-white/95 backdrop-blur-sm px-4 py-3 rounded-xl shadow-xl text-sm font-medium text-forest-800 border border-tea-200/50 max-w-[180px] ${
-                      spot.y > 60 ? 'top-16' : 'bottom-16'
+                    className={`absolute bg-white/95 backdrop-blur-sm px-3 py-2 rounded-lg shadow-xl text-xs font-medium text-forest-800 border border-tea-200/50 w-32 ${
+                      spot.y > 50 ? 'top-12' : 'bottom-12'
                     } ${
-                      spot.x > 65 ? 'right-2' : spot.x < 35 ? 'left-2' : 'left-1/2 transform -translate-x-1/2'
+                      spot.x > 60 ? 'right-4' : spot.x < 40 ? 'left-4' : 'left-1/2 transform -translate-x-1/2'
                     }`}
                   >
-                    <div className="font-bold text-tea-700 mb-1">{spot.name}</div>
-                    <div className="text-tea-600 text-xs leading-relaxed">{spot.description}</div>
-                    <div className={`absolute w-0 h-0 border-l-4 border-r-4 border-transparent ${
-                      spot.y > 60 
-                        ? 'bottom-full border-b-4 border-b-white/95' 
-                        : 'top-full border-t-4 border-t-white/95'
+                    <div className="font-bold text-tea-700 mb-1 text-xs truncate">{spot.name}</div>
+                    <div className="text-tea-600 text-xs leading-tight">{spot.description}</div>
+                    <div className={`absolute w-0 h-0 border-l-3 border-r-3 border-transparent ${
+                      spot.y > 50 
+                        ? 'bottom-full border-b-3 border-b-white/95' 
+                        : 'top-full border-t-3 border-t-white/95'
                     } ${
-                      spot.x > 65 ? 'right-6' : spot.x < 35 ? 'left-6' : 'left-1/2 transform -translate-x-1/2'
+                      spot.x > 60 ? 'right-4' : spot.x < 40 ? 'left-4' : 'left-1/2 transform -translate-x-1/2'
                     }`}></div>
                   </motion.div>
                 )}
