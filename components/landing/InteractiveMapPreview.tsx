@@ -72,11 +72,15 @@ export default function InteractiveMapPreview() {
                     initial={{ opacity: 0, y: 10, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.9 }}
-                    className="absolute bottom-14 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm px-4 py-3 rounded-xl shadow-xl text-sm font-medium text-forest-800 whitespace-nowrap border border-tea-200/50 min-w-max"
+                    className={`absolute bottom-14 bg-white/95 backdrop-blur-sm px-4 py-3 rounded-xl shadow-xl text-sm font-medium text-forest-800 border border-tea-200/50 max-w-[200px] ${
+                      spot.x > 70 ? 'right-0' : spot.x < 30 ? 'left-0' : 'left-1/2 transform -translate-x-1/2'
+                    }`}
                   >
                     <div className="font-bold text-tea-700 mb-1">{spot.name}</div>
-                    <div className="text-tea-600 text-xs">{spot.description}</div>
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-6 border-r-6 border-t-6 border-transparent border-t-white/95"></div>
+                    <div className="text-tea-600 text-xs leading-relaxed">{spot.description}</div>
+                    <div className={`absolute top-full w-0 h-0 border-l-6 border-r-6 border-t-6 border-transparent border-t-white/95 ${
+                      spot.x > 70 ? 'right-4' : spot.x < 30 ? 'left-4' : 'left-1/2 transform -translate-x-1/2'
+                    }`}></div>
                   </motion.div>
                 )}
               </AnimatePresence>
