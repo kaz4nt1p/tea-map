@@ -29,15 +29,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const router = useRouter();
 
   const isAuthenticated = !!user && authUtils.isAuthenticated();
+  
+  // Debug logging for authentication state
+  useEffect(() => {
+    console.log('🔍 Auth state changed:', { 
+      user: !!user, 
+      userAuth: authUtils.isAuthenticated(), 
+      tokenAuth: tokenManager.isAuthenticated(),
+      isAuthenticated,
+      isLoading 
+    });
+  }, [user, isAuthenticated, isLoading]);
 
   // Initialize authentication state
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Check for token in URL parameters (Google OAuth redirect)
+        // Check for authentication success/error from Google OAuth redirect
         const urlParams = new URLSearchParams(window.location.search);
-        const tokenFromUrl = urlParams.get('token');
         const errorFromUrl = urlParams.get('error');
+        const oauthSuccess = urlParams.get('oauth');
+        
+        console.log('🔍 URL params check:', { 
+          url: window.location.href,
+          search: window.location.search,
+          errorFromUrl, 
+          oauthSuccess,
+          allParams: Object.fromEntries(urlParams.entries())
+        });
         
         // Handle OAuth errors
         if (errorFromUrl) {
@@ -67,38 +86,93 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
         
-        if (tokenFromUrl) {
-          try {
-            // Store the token and get user profile
-            tokenManager.setAccessToken(tokenFromUrl);
-            tokenManager.setTokenType('Bearer');
-            const { user: googleUser } = await authApi.getProfile();
-            setUser(googleUser);
-            userManager.setUser(googleUser);
+        // Handle Google OAuth success redirect
+        if (oauthSuccess === 'success') {
+          console.log('🔍 OAuth success detected, processing...');
+          
+          // Set flag to show success notification
+          sessionStorage.setItem('googleOAuthSuccess', 'true');
+          sessionStorage.setItem('authSuccess', 'true');
+          
+          // Clean up URL parameters
+          const url = new URL(window.location.href);
+          url.searchParams.delete('oauth');
+          window.history.replaceState({}, '', url.toString());
+          
+          // Check authentication state
+          const cookieAuth = document.cookie.includes('authenticated=true');
+          const tokenAuth = tokenManager.isAuthenticated();
+          console.log('🔍 Auth state check:', { cookieAuth, tokenAuth });
+          
+          // Set authentication state immediately to trigger useGuestOnly redirect
+          const storedUser = userManager.getUser();
+          console.log('🔍 Stored user:', storedUser ? 'exists' : 'not found');
+          
+          if (storedUser) {
+            setUser(storedUser);
+            console.log('🔍 User state set from storage');
             
-            // Clean up URL parameters and redirect to dashboard if on map
-            const url = new URL(window.location.href);
-            url.searchParams.delete('token');
-            window.history.replaceState({}, '', url.toString());
-            
-            // If we're on the map page after Google OAuth, redirect to dashboard
-            if (window.location.pathname === '/map') {
-              window.location.href = '/dashboard';
-              return;
-            }
-            
+            // Show success notification immediately for stored user
             toast.success('Успешный вход через Google!');
+            
+            // Clear OAuth flag after showing notification
+            setTimeout(() => {
+              sessionStorage.removeItem('googleOAuthSuccess');
+            }, 1000);
+            
             setIsLoading(false);
+            console.log('🔍 Loading set to false with stored user');
             return;
-          } catch (error) {
-            console.error('Google OAuth token processing error:', error);
-            toast.error('Ошибка при входе через Google');
-            tokenManager.clearTokens();
+          } else {
+            // Try to fetch user profile if not stored locally
+            try {
+              console.log('🔍 Fetching user profile...');
+              const { user: googleUser } = await authApi.getProfile();
+              setUser(googleUser);
+              userManager.setUser(googleUser);
+              console.log('🔍 User profile fetched and set:', googleUser.username);
+              
+              // Show success notification
+              toast.success('Успешный вход через Google!');
+              
+              // Clear OAuth flag after showing notification
+              setTimeout(() => {
+                sessionStorage.removeItem('googleOAuthSuccess');
+              }, 1000);
+              
+              setIsLoading(false);
+              console.log('🔍 Loading set to false with fetched user');
+              return;
+            } catch (error) {
+              console.error('❌ Failed to fetch user profile during OAuth:', error);
+            }
           }
         }
         
+        // OAuth handling is now done above, continue with normal auth flow
+        
         // Check if user is stored locally
         const storedUser = authUtils.getCurrentUser();
+        
+        // FALLBACK: If we have auth cookie but no user, this might be a fresh OAuth without parameter
+        const hasAuthCookie = document.cookie.includes('authenticated=true');
+        if (hasAuthCookie && !storedUser && !oauthSuccess) {
+          console.log('🔍 Auth cookie exists but no user stored - fetching profile (OAuth fallback)');
+          try {
+            const { user: googleUser } = await authApi.getProfile();
+            setUser(googleUser);
+            userManager.setUser(googleUser);
+            sessionStorage.setItem('authSuccess', 'true');
+            toast.success('Успешный вход через Google!');
+            console.log('🔍 OAuth fallback successful:', googleUser.username);
+            setIsLoading(false);
+            return;
+          } catch (error) {
+            console.error('❌ OAuth fallback failed:', error);
+            // Clear invalid cookie
+            document.cookie = 'authenticated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          }
+        }
         
         if (storedUser && authUtils.isAuthenticated()) {
           setUser(storedUser);
@@ -136,8 +210,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(response.user);
       
       toast.success('Successfully logged in!');
+      
+      // Redirect to dashboard after successful login
+      router.push('/dashboard');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Login failed';
+      let errorMessage = error instanceof Error ? error.message : 'Login failed';
+      
+      // Provide better feedback for rate limiting
+      if (errorMessage.includes('Too many authentication attempts')) {
+        errorMessage = 'Слишком много попыток входа. Попробуйте позже или обновите страницу.';
+        
+        // In development, automatically reset rate limit
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+            await fetch(`${backendUrl}/api/auth/reset-rate-limit`, { method: 'POST' });
+            errorMessage += ' (Лимит сброшен для разработки)';
+          } catch (resetError) {
+            console.warn('Failed to reset rate limit:', resetError);
+          }
+        }
+      }
+      
       toast.error(errorMessage);
       throw error;
     } finally {
@@ -156,8 +250,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(response.user);
       
       toast.success('Successfully registered!');
+      
+      // Redirect to dashboard after successful registration
+      router.push('/dashboard');
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      let errorMessage = error instanceof Error ? error.message : 'Registration failed';
+      
+      // Provide better feedback for rate limiting
+      if (errorMessage.includes('Too many authentication attempts')) {
+        errorMessage = 'Слишком много попыток регистрации. Попробуйте позже или обновите страницу.';
+        
+        // In development, automatically reset rate limit
+        if (process.env.NODE_ENV !== 'production') {
+          try {
+            const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
+            await fetch(`${backendUrl}/api/auth/reset-rate-limit`, { method: 'POST' });
+            errorMessage += ' (Лимит сброшен для разработки)';
+          } catch (resetError) {
+            console.warn('Failed to reset rate limit:', resetError);
+          }
+        }
+      }
+      
       toast.error(errorMessage);
       throw error;
     } finally {

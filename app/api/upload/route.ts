@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data, { status: 200 });
 
   } catch (error: any) {
-    console.error('Upload proxy error:', error);
     return NextResponse.json({ 
       error: 'Failed to upload file' 
     }, { status: 500 });

@@ -293,10 +293,10 @@ export default function ActivityDetailPage() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-4xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
           {/* User header */}
-          <div className="flex items-center p-6 border-b border-gray-200">
+          <div className="flex items-center p-4 sm:p-6 border-b border-gray-200">
             <button
               onClick={() => activity.user?.username && router.push(`/profile/${activity.user.username}`)}
               className="hover:opacity-80 transition-opacity"
@@ -336,13 +336,13 @@ export default function ActivityDetailPage() {
           </div>
 
           {/* Activity content */}
-          <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+          <div className="p-4 sm:p-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4 break-words">
               {activity.title}
             </h1>
             
             {activity.description && (
-              <p className="text-gray-700 mb-6 leading-relaxed">
+              <p className="text-gray-700 mb-6 leading-relaxed break-words whitespace-pre-wrap">
                 {activity.description}
               </p>
             )}
@@ -351,18 +351,20 @@ export default function ActivityDetailPage() {
             {activity.spot && (
               <button
                 onClick={() => activity.spot?.id && router.push(`/map?spot=${activity.spot.id}`)}
-                className="flex items-center text-gray-600 mb-6 hover:text-green-600 transition-colors cursor-pointer rounded-lg p-2 -m-2 hover:bg-gray-50"
+                className="flex items-start text-gray-600 mb-6 hover:text-green-600 transition-colors cursor-pointer rounded-lg p-2 -m-2 hover:bg-gray-50 text-left w-full"
               >
-                <MapPin className="w-5 h-5 mr-2" />
-                <span className="font-medium">{activity.spot.name}</span>
-                {activity.spot.address && (
-                  <span className="ml-2 text-sm">• {activity.spot.address}</span>
-                )}
+                <MapPin className="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" />
+                <div className="break-words">
+                  <span className="font-medium">{activity.spot.name}</span>
+                  {activity.spot.address && (
+                    <span className="ml-2 text-sm block sm:inline">• {activity.spot.address}</span>
+                  )}
+                </div>
               </button>
             )}
             
             {/* Activity metadata */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
               {activity.duration_minutes && (
                 <div className="flex items-center text-gray-600">
                   <Clock className="w-4 h-4 mr-2" />
@@ -378,9 +380,9 @@ export default function ActivityDetailPage() {
               )}
               
               {activity.companions && activity.companions.length > 0 && (
-                <div className="flex items-center text-gray-600">
-                  <Users className="w-4 h-4 mr-2" />
-                  <span>{activity.companions.join(', ')}</span>
+                <div className="flex items-start text-gray-600">
+                  <Users className="w-4 h-4 mr-2 mt-0.5 flex-shrink-0" />
+                  <span className="break-words">{activity.companions.join(', ')}</span>
                 </div>
               )}
             </div>
@@ -389,7 +391,7 @@ export default function ActivityDetailPage() {
             {(activity.mood_before || activity.mood_after) && (
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <h3 className="font-medium text-gray-900 mb-3">Настроение</h3>
-                <div className="flex items-center space-x-8">
+                <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-8">
                   {activity.mood_before && (
                     <div>
                       <div className="text-sm text-gray-600 mb-1">До</div>
@@ -415,7 +417,7 @@ export default function ActivityDetailPage() {
 
           {/* Activity photos */}
           {activity.media && activity.media.length > 0 && (
-            <div className="p-6 pt-0">
+            <div className="p-4 sm:p-6 pt-0">
               <ActivityPhotoGrid 
                 photos={activity.media}
                 onPhotoClick={(photoIndex) => {
@@ -427,12 +429,12 @@ export default function ActivityDetailPage() {
 
           {/* Taste notes */}
           {activity.taste_notes && (
-            <div className="p-6 bg-gray-50">
+            <div className="p-4 sm:p-6 bg-gray-50">
               <div className="flex items-center text-gray-700 mb-2">
-                <Leaf className="w-5 h-5 mr-2" />
+                <Leaf className="w-5 h-5 mr-2 flex-shrink-0" />
                 <span className="font-medium">Заметки о вкусе</span>
               </div>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed break-words whitespace-pre-wrap">
                 {activity.taste_notes}
               </p>
             </div>
@@ -440,9 +442,9 @@ export default function ActivityDetailPage() {
 
           {/* Insights */}
           {activity.insights && (
-            <div className="p-6 border-t border-gray-200">
+            <div className="p-4 sm:p-6 border-t border-gray-200">
               <h3 className="font-medium text-gray-900 mb-2">Размышления</h3>
-              <p className="text-gray-700 leading-relaxed">
+              <p className="text-gray-700 leading-relaxed break-words whitespace-pre-wrap">
                 {activity.insights}
               </p>
             </div>
@@ -450,9 +452,9 @@ export default function ActivityDetailPage() {
 
           {/* Tea brewing details */}
           {activity.tea_details && Object.keys(activity.tea_details).length > 0 && (
-            <div className="p-6 bg-gray-50">
+            <div className="p-4 sm:p-6 bg-gray-50">
               <h3 className="font-medium text-gray-900 mb-3">Детали заваривания</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {activity.tea_details.brewing_temperature && (
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Температура</div>
@@ -482,8 +484,8 @@ export default function ActivityDetailPage() {
           )}
 
           {/* Action buttons */}
-          <div className="flex items-center justify-between p-6 border-t border-gray-200">
-            <div className="flex items-center space-x-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 border-t border-gray-200 space-y-4 sm:space-y-0">
+            <div className="flex items-center space-x-4 sm:space-x-6">
               <button 
                 onClick={handleLike}
                 disabled={isLiking || !isAuthenticated}
@@ -517,7 +519,7 @@ export default function ActivityDetailPage() {
             initialComments={activity.comments || []}
             initialCount={commentCount}
             onCommentCountChange={setCommentCount}
-            className="px-6 pb-6"
+            className="px-4 sm:px-6 pb-4 sm:pb-6"
           />
         </div>
       </div>

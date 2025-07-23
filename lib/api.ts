@@ -15,46 +15,71 @@ const apiClient: AxiosInstance = axios.create({
   withCredentials: true, // Important for refresh token cookies
 });
 
-// Request interceptor to add auth token
+// Request interceptor - HTTP-only cookies are automatically sent
 apiClient.interceptors.request.use(
   (config) => {
-    const authHeader = tokenManager.getAuthHeader();
-    if (authHeader) {
-      config.headers.Authorization = authHeader;
-    }
+    // HTTP-only cookies are automatically sent with requests
+    // No need to manually add Authorization headers
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle token refresh
+// Token refresh queue to prevent race conditions
+let isRefreshing = false;
+let refreshQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: any) => void;
+}> = [];
+
+// Response interceptor to handle token refresh with queuing
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config;
     
     if (error.response?.status === 401 && originalRequest && !(originalRequest as any)._retry) {
+      if (isRefreshing) {
+        // Token refresh is already in progress, queue this request
+        return new Promise((resolve, reject) => {
+          refreshQueue.push({
+            resolve: (token: string) => {
+              // Retry the original request once token is refreshed
+              resolve(apiClient(originalRequest));
+            },
+            reject: (error: any) => {
+              reject(error);
+            }
+          });
+        });
+      }
+
       (originalRequest as any)._retry = true;
+      isRefreshing = true;
       
       try {
-        // Try to refresh token
+        // Try to refresh token - HTTP-only cookies are handled automatically
         const refreshResponse = await apiClient.post('/api/auth/refresh');
         const authData: AuthResponse = refreshResponse.data.data;
         
-        // Save new tokens
-        tokenManager.saveAuthResponse(authData);
-        
-        // Update user data
+        // Update user data (tokens are now in HTTP-only cookies)
         authUtils.updateCurrentUser(authData.user);
         
-        // Retry original request with new token
-        if (originalRequest.headers) {
-          originalRequest.headers.Authorization = tokenManager.getAuthHeader();
-        }
+        // Process queued requests
+        refreshQueue.forEach(({ resolve }) => {
+          resolve('refreshed');
+        });
+        refreshQueue = [];
         
+        // Retry original request - HTTP-only cookies are automatically sent
         return apiClient(originalRequest);
       } catch (refreshError) {
-        // Refresh failed, logout user
+        // Refresh failed, reject all queued requests and logout user
+        refreshQueue.forEach(({ reject }) => {
+          reject(refreshError);
+        });
+        refreshQueue = [];
+        
         authUtils.logout();
         
         // Redirect to login page
@@ -63,6 +88,8 @@ apiClient.interceptors.response.use(
         }
         
         return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
     

@@ -50,20 +50,34 @@ export default function ActivityPhotoUploader({
 
     setUploading(true);
     const uploadPromises = filesToUpload.map(async (file) => {
-      const formData = new FormData();
-      formData.append('file', file);
+      try {
+        // Create form data with correct field name for frontend proxy
+        const formData = new FormData();
+        formData.append('file', file); // Frontend proxy expects 'file' and converts to 'image'
+        
+        // Use apiClient for upload with automatic token refresh and error handling
+        const response = await apiClient.post('/api/upload', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
 
-      const response = await apiClient.post('/api/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+        if (!response.data) {
+          throw new Error('Upload failed - no response data');
+        }
 
-      return {
-        url: response.data.url,
-        publicId: response.data.publicId,
-        thumbnail: response.data.thumbnails?.medium || response.data.url
-      };
+        const responseData = response.data;
+
+        return {
+          url: responseData.url,
+          publicId: responseData.publicId,
+          thumbnail: responseData.thumbnails?.medium || responseData.url
+        };
+      } catch (error: any) {
+        console.error('Photo upload error:', error);
+        toast.error(`Ошибка загрузки фото: ${error.message}`);
+        return { url: '', publicId: '', thumbnail: '' };
+      }
     });
 
     try {
@@ -72,8 +86,15 @@ export default function ActivityPhotoUploader({
       
       toast.success(`Загружено ${uploadedPhotos.length} фото`);
     } catch (error: any) {
-      console.error('Upload error:', error);
-      toast.error(error.message || 'Ошибка загрузки фотографий');
+      let errorMessage = 'Ошибка загрузки фотографий';
+      
+      if (error.response?.data?.error) {
+        errorMessage = error.response.data.error;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setUploading(false);
     }

@@ -34,7 +34,7 @@ router.get('/google/callback',
       // Generate JWT tokens
       const tokens = generateTokens(user);
       
-      // Set refresh token as HTTP-only cookie
+      // Set both tokens as HTTP-only cookies for security
       res.cookie('refreshToken', tokens.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -42,10 +42,24 @@ router.get('/google/callback',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
       
-      // Redirect to frontend with access token
+      res.cookie('accessToken', tokens.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000 // 15 minutes
+      });
+      
+      // Set user session flag for frontend authentication check
+      res.cookie('authenticated', 'true', {
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000 // 15 minutes
+      });
+      
+      // Redirect to frontend with OAuth success flag
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3001';
-      const redirectUrl = `${frontendUrl}/dashboard?token=${tokens.accessToken}`;
-      console.log('🔄 Redirecting to:', redirectUrl);
+      const redirectUrl = `${frontendUrl}/dashboard?oauth=success`;
+      console.log('🔄 Redirecting to secure OAuth callback:', redirectUrl);
       res.redirect(redirectUrl);
     } catch (error) {
       console.error('Google OAuth callback error:', error);

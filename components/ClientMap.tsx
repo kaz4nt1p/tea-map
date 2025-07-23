@@ -248,7 +248,7 @@ export default function ClientMap({
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </summary>
-            <div className="mt-2 max-h-64 overflow-hidden">
+            <div className="mt-2 max-h-48 overflow-y-auto pb-2">
               <SpotList spots={spots} onMarkerClick={handleSpotListClick} onRandom={handleRandomSpot} />
             </div>
           </details>
