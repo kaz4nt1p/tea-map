@@ -126,7 +126,12 @@ const LandingPage = () => {
 
   const navigateToApp = () => {
     if (isAuthenticated) {
+      // Navigate to dashboard and scroll to top
       router.push('/dashboard');
+      // Ensure scroll to top after navigation
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
     } else {
       router.push('/auth');
     }
