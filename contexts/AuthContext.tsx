@@ -30,16 +30,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const isAuthenticated = !!user && authUtils.isAuthenticated();
   
-  // Debug logging for authentication state
-  useEffect(() => {
-    console.log('🔍 Auth state changed:', { 
-      user: !!user, 
-      userAuth: authUtils.isAuthenticated(), 
-      tokenAuth: tokenManager.isAuthenticated(),
-      isAuthenticated,
-      isLoading 
-    });
-  }, [user, isAuthenticated, isLoading]);
+  // Authentication state is now stable
 
   // Initialize authentication state
   useEffect(() => {
@@ -50,13 +41,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const errorFromUrl = urlParams.get('error');
         const oauthSuccess = urlParams.get('oauth');
         
-        console.log('🔍 URL params check:', { 
-          url: window.location.href,
-          search: window.location.search,
-          errorFromUrl, 
-          oauthSuccess,
-          allParams: Object.fromEntries(urlParams.entries())
-        });
+        // OAuth parameter detection
         
         // Handle OAuth errors
         if (errorFromUrl) {
@@ -88,8 +73,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         
         // Handle Google OAuth success redirect
         if (oauthSuccess === 'success') {
-          console.log('🔍 OAuth success detected, processing...');
-          
           // Set flag to show success notification
           sessionStorage.setItem('googleOAuthSuccess', 'true');
           sessionStorage.setItem('authSuccess', 'true');
@@ -99,18 +82,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           url.searchParams.delete('oauth');
           window.history.replaceState({}, '', url.toString());
           
-          // Check authentication state
-          const cookieAuth = document.cookie.includes('authenticated=true');
-          const tokenAuth = tokenManager.isAuthenticated();
-          console.log('🔍 Auth state check:', { cookieAuth, tokenAuth });
-          
-          // Set authentication state immediately to trigger useGuestOnly redirect
+          // Set authentication state immediately
           const storedUser = userManager.getUser();
-          console.log('🔍 Stored user:', storedUser ? 'exists' : 'not found');
           
           if (storedUser) {
             setUser(storedUser);
-            console.log('🔍 User state set from storage');
             
             // Show success notification immediately for stored user
             toast.success('Успешный вход через Google!');
@@ -121,16 +97,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }, 1000);
             
             setIsLoading(false);
-            console.log('🔍 Loading set to false with stored user');
             return;
           } else {
             // Try to fetch user profile if not stored locally
             try {
-              console.log('🔍 Fetching user profile...');
               const { user: googleUser } = await authApi.getProfile();
               setUser(googleUser);
               userManager.setUser(googleUser);
-              console.log('🔍 User profile fetched and set:', googleUser.username);
               
               // Show success notification
               toast.success('Успешный вход через Google!');
@@ -141,10 +114,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               }, 1000);
               
               setIsLoading(false);
-              console.log('🔍 Loading set to false with fetched user');
               return;
             } catch (error) {
-              console.error('❌ Failed to fetch user profile during OAuth:', error);
+              console.error('Failed to fetch user profile during OAuth:', error);
             }
           }
         }
@@ -157,18 +129,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // FALLBACK: If we have auth cookie but no user, this might be a fresh OAuth without parameter
         const hasAuthCookie = document.cookie.includes('authenticated=true');
         if (hasAuthCookie && !storedUser && !oauthSuccess) {
-          console.log('🔍 Auth cookie exists but no user stored - fetching profile (OAuth fallback)');
           try {
             const { user: googleUser } = await authApi.getProfile();
             setUser(googleUser);
             userManager.setUser(googleUser);
             sessionStorage.setItem('authSuccess', 'true');
             toast.success('Успешный вход через Google!');
-            console.log('🔍 OAuth fallback successful:', googleUser.username);
             setIsLoading(false);
             return;
           } catch (error) {
-            console.error('❌ OAuth fallback failed:', error);
+            console.error('OAuth fallback failed:', error);
             // Clear invalid cookie
             document.cookie = 'authenticated=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
           }

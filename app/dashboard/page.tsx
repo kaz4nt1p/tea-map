@@ -16,12 +16,10 @@ export default function DashboardPage() {
 
   // Redirect unauthenticated users
   useEffect(() => {
-    console.log('🔍 Dashboard auth check:', { isLoading, isAuthenticated, user: !!user });
     if (!isLoading && !isAuthenticated) {
-      console.log('❌ Dashboard redirecting to /auth');
       router.push('/auth');
     }
-  }, [isLoading, isAuthenticated, router, user]);
+  }, [isLoading, isAuthenticated, router]);
 
   const [showActivityForm, setShowActivityForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
