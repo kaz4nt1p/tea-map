@@ -118,17 +118,29 @@ export const ActivityList: React.FC<ActivityListProps> = ({
       onActivityClick(activity);
     } else {
       router.push(`/activities/${activity.id}`);
+      // Ensure scroll to top after navigation
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
     }
   };
 
   // Handle user click
   const handleUserClick = (username: string) => {
     router.push(`/profile/${username}`);
+    // Ensure scroll to top after navigation
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   // Handle spot click
   const handleSpotClick = (spotId: string) => {
     router.push(`/map?spot=${spotId}`);
+    // Ensure scroll to top after navigation
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
   };
 
   if (error) {
