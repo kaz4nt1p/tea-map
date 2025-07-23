@@ -408,13 +408,8 @@ const LandingPage = () => {
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <div className="relative">
-                  <div className="w-16 h-16 bg-gradient-to-r from-tea-500 to-sage-600 rounded-full flex items-center justify-center mb-4 mx-auto">
-                    <span className="text-white text-2xl">{step.icon}</span>
-                  </div>
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-400 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                    {index + 1}
-                  </div>
+                <div className="w-16 h-16 bg-gradient-to-r from-tea-500 to-sage-600 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <span className="text-white text-2xl">{step.icon}</span>
                 </div>
                 <h3 className="text-2xl font-semibold text-forest-900 mb-3">
                   {step.title}
