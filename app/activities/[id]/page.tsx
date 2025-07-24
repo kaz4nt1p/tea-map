@@ -51,7 +51,7 @@ export default function ActivityDetailPage() {
     
     try {
       const data = await activitiesApi.getActivityById(activityId);
-      setActivity(data.activity);
+      setActivity(data.activity as unknown as Activity);
       setIsLiked(data.activity.isLiked || false);
       setLikeCount(data.activity._count?.likes || 0);
       setCommentCount(data.activity._count?.comments || 0);
