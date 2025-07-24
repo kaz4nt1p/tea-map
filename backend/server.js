@@ -26,6 +26,25 @@ app.use(cors({
   credentials: true
 }));
 app.use(cookieParser());
+
+// Performance monitoring middleware
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    
+    // Log slow requests
+    if (duration > 1000) {
+      console.warn(`🐌 SLOW REQUEST: ${req.method} ${req.path} - ${duration}ms - ${res.statusCode}`);
+    } else if (duration > 500) {
+      console.log(`⚠️  ${req.method} ${req.path} - ${duration}ms - ${res.statusCode}`);
+    }
+  });
+  
+  next();
+});
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 

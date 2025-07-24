@@ -73,6 +73,10 @@ model Activity {
   comments          ActivityComment[]
   likes             ActivityLike[]
 
+  // Performance indexes
+  @@index([user_id, created_at(sort: Desc)])
+  @@index([spot_id, created_at(sort: Desc)])
+  @@index([privacy_level, created_at(sort: Desc)])
   @@map("activities")
 }
 
@@ -147,6 +151,7 @@ model ActivityComment {
   activity    Activity  @relation(fields: [activity_id], references: [id], onDelete: Cascade)
   user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
+  @@index([activity_id, created_at(sort: Desc)])
   @@map("activity_comments")
 }
 
@@ -162,6 +167,8 @@ model ActivityLike {
   user        User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@unique([activity_id, user_id])
+  @@index([activity_id])
+  @@index([user_id])
   @@map("activity_likes")
 }
 
