@@ -1,0 +1,97 @@
+# Page snapshot
+
+```yaml
+- navigation:
+  - link "🍵 Tea Map":
+    - /url: /dashboard
+  - link "Лента":
+    - /url: /dashboard
+  - link "Карта":
+    - /url: /map
+  - link "Войти":
+    - /url: /auth
+- heading "Чайная лента" [level=1]
+- paragraph: Последние чайные сессии сообщества
+- heading "Быстрые действия" [level=3]
+- button "Исследовать споты"
+- button "Мой профиль"
+- button "Статистика"
+- heading "Эта неделя" [level=3]
+- text: Сессии 8 Время 1.3 ч Новые споты 16
+- heading "Чайные сессии" [level=2]
+- button "Обновить"
+- img "Mike"
+- heading "Mike" [level=3]
+- paragraph: 23 минуты назад
+- text: 🫖 Чай
+- heading "test" [level=4]
+- text: "1"
+- button "0"
+- button "0"
+- img "Mike"
+- heading "Mike" [level=3]
+- paragraph: около 13 часов назад
+- text: 🌿 Травяной
+- heading "Ну такое" [level=4]
+- text: 1 🧘 relaxed
+- button "0"
+- button "0"
+- img "Mike"
+- heading "Mike" [level=3]
+- paragraph: около 14 часов назад
+- text: 🍂 Пуэр
+- heading "Вагван чай" [level=4]
+- button "0"
+- button "0"
+- img "Mike"
+- heading "Mike" [level=3]
+- paragraph: около 14 часов назад
+- text: 🍵 Матча
+- heading "Вагван чай" [level=4]
+- button "0"
+- button "0"
+- img "Mike"
+- heading "Mike" [level=3]
+- paragraph: около 14 часов назад
+- text: 🤍 Белый чай
+- heading "Варка дома" [level=4]
+- button "0"
+- button "0"
+- img "Mike"
+- heading "Mike" [level=3]
+- paragraph: около 14 часов назад
+- text: 🤍 Белый чай
+- heading "Варка чая" [level=4]
+- button "0"
+- button "0"
+- heading "Test User" [level=3]
+- paragraph: 1 день назад
+- text: 🍵 Green Tea
+- heading "Morning Tea Session" [level=4]
+- paragraph: Relaxing morning tea
+- text: Test Tea Spot 30 мин 🧘 Tired
+- button "0"
+- button "0"
+- heading "Admin User" [level=3]
+- paragraph: 1 день назад
+- text: 🍵 Oolong
+- heading "Test Tea Session" [level=4]
+- paragraph: Testing the new PostgreSQL schema
+- text: "Утренний спот 45 мин 🧘 Stressed Заметки о вкусе:"
+- paragraph: Floral, smooth, slightly sweet
+- button "0"
+- button "0"
+- text: 🌤️ Sunny, light breeze
+- heading "Популярные споты" [level=3]
+- text: 1 2 сессий эта неделя Утренний спот 1 сессия эта неделя Test Tea Spot 1 сессия эта неделя
+- heading "Сообщество" [level=3]
+- text: Активных участников 247 Сессий сегодня 18 Новых спотов 3
+- heading "Рекомендуемые друзья" [level=3]
+- text: Анна Петрова @anna_tea
+- button "Подписаться"
+- text: Михаил Сидоров @mike_oolong
+- button "Подписаться"
+- alert
+- button "Open Next.js Dev Tools":
+  - img
+```

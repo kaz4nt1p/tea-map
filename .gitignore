@@ -1,64 +1,76 @@
-# Исключить всё по умолчанию
-*
-
-# Оставляем только файлы и папки, которые должны быть в git:
-!.gitignore
-!README.md
-!package.json
-!package-lock.json
-!yarn.lock
-!next.config.js
-!tsconfig.json
-!.env.example
-
-!components/
-!lib/
-!pages/
-!app/
-!public/
-!styles/
-!backend/
-
-# Игнорируем всё содержимое public кроме favicon и нужных иконок
-public/*
-!public/favicon.ico
-!public/tea-icon.svg
-!public/uploads/
-public/uploads/*
-!public/uploads/.gitkeep
-
-# Всегда игнорировать:
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Production builds
 .next/
 out/
 dist/
+build/
+
+# Environment files (keep .env.example)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env
+
+# Debug and logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 logs/
 *.log
-public/uploads/
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.webp
-*.zip
-*.tar
-*.tar.gz
-*.7z
-*.mp4
-*.mov
-*.avi
-*.mkv
-*.psd
-*.ai
-*.sketch
+
+# Testing
 coverage/
-tmp/
-temp/
-*.tmp
-*.sqlite
-*.db
+
+# Vercel
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# System files
 .DS_Store
+*.db
+*.sqlite
 .vscode/
 Thumbs.db
 ehthumbs.db
 Icon?
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Media files in uploads (user generated content)
+public/uploads/*
+!public/uploads/.gitkeep
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.7z
+
+# Image source files (design assets)
+*.psd
+*.ai
+*.sketch
+
+# Video files
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Backend specific
+backend/node_modules/
+backend/.env
+backend/dist/
+backend/logs/
