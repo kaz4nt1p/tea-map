@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { ActivityList } from '../../../components/ActivityList';
 import { User, UserStats } from '../../../lib/types';
-import { tokenManager } from '../../../lib/auth';
+import apiClient from '../../../lib/api';
 import { useRouter } from 'next/navigation';
 import { Calendar, MapPin, TrendingUp, Users, ArrowLeft, Loader2 } from 'lucide-react';
 import { AvatarImage } from '../../../components/AvatarImage';
@@ -34,29 +34,14 @@ export default function UserProfilePage({ params }: ProfilePageProps) {
       setStatsLoading(true);
       setStatsError(null);
       
-      const token = tokenManager.getAccessToken();
-      console.log('Profile stats fetch - token available:', !!token);
-      console.log('Fetching stats for user ID:', userId);
+      console.log('Profile stats fetch - fetching for user ID:', userId);
       
-      const response = await fetch(`/api/stats/user/${userId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
+      const response = await apiClient.get(`/api/stats/user/${userId}`);
       
-      console.log('Profile stats response status:', response.status);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Profile stats error response:', errorText);
-        throw new Error(`Failed to fetch user statistics: ${response.status} - ${errorText}`);
-      }
-      
-      const data = await response.json();
-      console.log('Profile stats received:', data.data);
-      setStats(data.data);
-    } catch (error) {
+      console.log('Profile stats response:', response.status);
+      console.log('Profile stats received:', response.data.data);
+      setStats(response.data.data);
+    } catch (error: any) {
       console.error('Error fetching user stats:', error);
       console.error('Error details:', error.message);
       setStatsError('Failed to load statistics');
@@ -82,32 +67,19 @@ export default function UserProfilePage({ params }: ProfilePageProps) {
         setLoading(true);
         setError(null);
 
-        const token = tokenManager.getAccessToken();
-        const response = await fetch(`/api/users/${username}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` }),
-          },
-        });
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            setError('Пользователь не найден');
-          } else {
-            setError('Ошибка при загрузке профиля');
-          }
-          return;
-        }
-
-        const userData = await response.json();
-        setProfileUser(userData.data);
+        const response = await apiClient.get(`/api/users/${username}`);
+        setProfileUser(response.data.data);
 
         // Fetch user statistics
-        console.log('Auto-fetching stats for loaded user:', userData.data.id);
-        await fetchUserStats(userData.data.id);
-      } catch (err) {
+        console.log('Auto-fetching stats for loaded user:', response.data.data.id);
+        await fetchUserStats(response.data.data.id);
+      } catch (err: any) {
         console.error('Error fetching user profile:', err);
-        setError('Ошибка при загрузке профиля');
+        if (err.response?.status === 404) {
+          setError('Пользователь не найден');
+        } else {
+          setError('Ошибка при загрузке профиля');
+        }
       } finally {
         setLoading(false);
       }
