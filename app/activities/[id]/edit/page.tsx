@@ -48,7 +48,7 @@ export default function EditActivityPage() {
         return;
       }
       
-      setActivity(activity);
+      setActivity(activity as any);
     } catch (error) {
       console.error('Error fetching activity:', error);
       toast.error('Failed to load activity');
