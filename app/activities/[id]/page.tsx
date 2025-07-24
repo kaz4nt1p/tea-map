@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Activity, ApiResponse, User, TEA_TYPES, MOOD_TYPES } from '../../../lib/types';
 import { useAuth } from '../../../contexts/AuthContext';
-import { tokenManager } from '../../../lib/auth';
+import { activitiesApi } from '../../../lib/api';
 import { formatDistanceToNow } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { 
@@ -50,25 +50,11 @@ export default function ActivityDetailPage() {
     setError(null);
     
     try {
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`/api/activities/${activityId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
-      const data: ApiResponse<{ activity: Activity }> = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch activity');
-      }
-      
-      if (data.data) {
-        setActivity(data.data.activity);
-        setIsLiked(data.data.activity.is_liked || false);
-        setLikeCount(data.data.activity.like_count || 0);
-        setCommentCount(data.data.activity.comment_count || 0);
-      }
+      const data = await activitiesApi.getActivityById(activityId);
+      setActivity(data.activity);
+      setIsLiked(data.activity.isLiked || false);
+      setLikeCount(data.activity._count?.likes || 0);
+      setCommentCount(data.activity._count?.comments || 0);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
@@ -81,31 +67,17 @@ export default function ActivityDetailPage() {
     
     setIsLiking(true);
     try {
-      const token = tokenManager.getAccessToken();
+      const result = await activitiesApi.toggleLike(activityId);
+      const previousLiked = isLiked;
+      setIsLiked(result.liked);
       
-      const response = await fetch(`/api/activities/${activityId}/like`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
-      
-      if (response.ok) {
-        const responseData = await response.json();
-        const previousLiked = isLiked;
-        const newLikedState = responseData.data.liked;
-        
-        setIsLiked(newLikedState);
-        
-        // Update count based on the change in liked state
-        if (newLikedState && !previousLiked) {
-          // User just liked the activity
-          setLikeCount(prev => prev + 1);
-        } else if (!newLikedState && previousLiked) {
-          // User just unliked the activity
-          setLikeCount(prev => prev - 1);
-        }
+      // Update count based on the change in liked state
+      if (result.liked && !previousLiked) {
+        // User just liked the activity
+        setLikeCount(prev => prev + 1);
+      } else if (!result.liked && previousLiked) {
+        // User just unliked the activity
+        setLikeCount(prev => prev - 1);
       }
     } catch (error) {
       console.error('Error liking activity:', error);
@@ -124,20 +96,8 @@ export default function ActivityDetailPage() {
     }
     
     try {
-      const token = tokenManager.getAccessToken();
-      const response = await fetch(`/api/activities/${activityId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }),
-        },
-      });
-      
-      if (response.ok) {
-        router.push('/profile');
-      } else {
-        throw new Error('Failed to delete activity');
-      }
+      await activitiesApi.deleteActivity(activityId);
+      router.push('/profile');
     } catch (error) {
       console.error('Error deleting activity:', error);
       alert('Ошибка при удалении активности');
