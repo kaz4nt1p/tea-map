@@ -51,9 +51,9 @@ export default function ActivityPhotoUploader({
     setUploading(true);
     const uploadPromises = filesToUpload.map(async (file) => {
       try {
-        // Create form data with correct field name for frontend proxy
+        // Create form data with correct field name for backend
         const formData = new FormData();
-        formData.append('file', file); // Frontend proxy expects 'file' and converts to 'image'
+        formData.append('image', file); // Backend expects 'image' field name
         
         // Use apiClient for upload with automatic token refresh and error handling
         const response = await apiClient.post('/api/upload', formData, {
@@ -76,12 +76,13 @@ export default function ActivityPhotoUploader({
       } catch (error: any) {
         console.error('Photo upload error:', error);
         toast.error(`Ошибка загрузки фото: ${error.message}`);
-        return { url: '', publicId: '', thumbnail: '' };
+        return null; // Return null for failed uploads
       }
     });
 
     try {
-      const uploadedPhotos = await Promise.all(uploadPromises);
+      const uploadResults = await Promise.all(uploadPromises);
+      const uploadedPhotos = uploadResults.filter(photo => photo !== null);
       onPhotosChange([...photos, ...uploadedPhotos]);
       
       toast.success(`Загружено ${uploadedPhotos.length} фото`);
@@ -151,11 +152,13 @@ export default function ActivityPhotoUploader({
               exit={{ opacity: 0, scale: 0.8 }}
               className="relative flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100"
             >
-              <img
-                src={photo.thumbnail || photo.url}
-                alt={`Фото ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
+              {(photo.thumbnail || photo.url) && (
+                <img
+                  src={photo.thumbnail || photo.url}
+                  alt={`Фото ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              )}
               <button
                 onClick={(e) => {
                   e.preventDefault();
