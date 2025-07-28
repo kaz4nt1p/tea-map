@@ -225,6 +225,7 @@ router.get('/:id', optionalAuth, asyncHandler(async (req, res) => {
     title: activity.title,
     description: activity.description,
     tea_type: activity.tea_type,
+    tea_name: activity.tea_name, // ✅ Added missing tea_name field!
     tea_details: activity.tea_details,
     mood_before: activity.mood_before,
     mood_after: activity.mood_after,
@@ -271,6 +272,10 @@ router.post('/', authenticateToken, validate(createActivitySchema), asyncHandler
     photos,
     privacy_level
   } = req.body;
+  
+  console.log('Create activity request body:', req.body);
+  console.log('CREATE Tea name from request:', tea_name);
+  console.log('CREATE Tea type from request:', tea_type);
   
   // Validate spot exists if provided
   if (spot_id) {
@@ -410,6 +415,10 @@ router.put('/:id', authenticateToken, validate(createActivitySchema), asyncHandl
     privacy_level
   } = req.body;
   
+  console.log('Update activity request body:', req.body);
+  console.log('Tea name from request:', tea_name);
+  console.log('Tea type from request:', tea_type);
+  
   // Check if activity exists and user owns it
   const existingActivity = await prisma.activity.findUnique({
     where: { id },
@@ -436,24 +445,29 @@ router.put('/:id', authenticateToken, validate(createActivitySchema), asyncHandl
     }
   }
   
+  const updateData = {
+    spot_id: spot_id || null,
+    title,
+    description: description || '',
+    tea_type: tea_type || '',
+    tea_name: tea_name || '',
+    tea_details: tea_details || {},
+    mood_before: mood_before || '',
+    mood_after: mood_after || '',
+    taste_notes: taste_notes || '',
+    insights: insights || '',
+    duration_minutes: duration_minutes || null,
+    weather_conditions: weather_conditions || '',
+    companions: companions || [],
+    privacy_level: privacy_level || 'public'
+  };
+  
+  console.log('Update data being saved:', updateData);
+  console.log('Tea name being saved:', updateData.tea_name);
+  
   const activity = await prisma.activity.update({
     where: { id },
-    data: {
-      spot_id: spot_id || null,
-      title,
-      description: description || '',
-      tea_type: tea_type || '',
-      tea_name: tea_name || '',
-      tea_details: tea_details || {},
-      mood_before: mood_before || '',
-      mood_after: mood_after || '',
-      taste_notes: taste_notes || '',
-      insights: insights || '',
-      duration_minutes: duration_minutes || null,
-      weather_conditions: weather_conditions || '',
-      companions: companions || [],
-      privacy_level: privacy_level || 'public'
-    },
+    data: updateData,
     include: {
       user: {
         select: {
