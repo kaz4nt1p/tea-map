@@ -8,10 +8,15 @@ import { Card, CardContent } from '../ui/card';
 import { AvatarImage } from '../AvatarImage';
 import { useRouter } from 'next/navigation';
 
-const UserMenu: React.FC = () => {
+interface UserMenuProps {
+  onMenuOpen?: () => void;
+}
+
+const UserMenu: React.FC<UserMenuProps> = ({ onMenuOpen }) => {
   const { user, logout, isLoading } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
 
   // Close menu when clicking outside
@@ -49,7 +54,13 @@ const UserMenu: React.FC = () => {
   return (
     <div className="relative" ref={menuRef}>
       <button
-        onClick={() => setIsOpen(!isOpen)}
+        ref={buttonRef}
+        onClick={() => {
+          if (!isOpen && onMenuOpen) {
+            onMenuOpen();
+          }
+          setIsOpen(!isOpen);
+        }}
         className="flex items-center space-x-2 p-2 rounded-lg hover:bg-tea-50 transition-colors"
         disabled={isLoading}
       >
@@ -59,7 +70,7 @@ const UserMenu: React.FC = () => {
           size="md"
           fallback={<span className="text-white font-medium text-sm">{initials}</span>}
         />
-        <span className="text-forest-700 font-medium hidden md:block">
+        <span className="text-forest-700 font-medium hidden lg:block max-w-[120px] truncate">
           {displayName}
         </span>
         <svg
@@ -85,54 +96,29 @@ const UserMenu: React.FC = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="absolute right-0 mt-2 w-64 z-[9999]"
+            className="absolute top-full right-0 mt-4 w-56 z-[99999]"
           >
-            <Card className="shadow-xl border-tea-200 bg-white/95 backdrop-blur-md border-2 rounded-xl">
+            <Card className="shadow-xl border-gray-200 bg-white border rounded-xl">
               <CardContent className="p-4">
-                <div className="flex items-center space-x-3 mb-4 pb-4 border-b border-tea-100">
+                <div className="flex items-center space-x-3 mb-3 pb-3 border-b border-gray-100">
                   <AvatarImage
                     src={user.avatar_url}
                     alt={displayName}
-                    size="lg"
-                    className="w-12 h-12"
-                    fallback={<span className="text-white font-medium text-lg">{initials}</span>}
+                    size="md"
+                    className="w-10 h-10"
+                    fallback={<span className="text-white font-medium text-sm">{initials}</span>}
                   />
-                  <div>
-                    <h3 className="font-medium text-forest-900">{displayName}</h3>
-                    <p className="text-sm text-forest-600">@{user.username}</p>
-                    <p className="text-xs text-forest-500">{user.email}</p>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-medium text-forest-900 truncate">{displayName}</h3>
+                    <p className="text-xs text-forest-600 truncate">@{user.username}</p>
                   </div>
                 </div>
 
-                {user.bio && (
-                  <div className="mb-4 pb-4 border-b border-tea-100">
-                    <p className="text-sm text-forest-700">{user.bio}</p>
-                  </div>
-                )}
-
-                {user._count && (
-                  <div className="mb-4 pb-4 border-b border-tea-100">
-                    <div className="grid grid-cols-2 gap-4 text-center">
-                      <div>
-                        <p className="text-lg font-semibold text-forest-900">
-                          {user._count.spots}
-                        </p>
-                        <p className="text-xs text-forest-600">Spots</p>
-                      </div>
-                      <div>
-                        <p className="text-lg font-semibold text-forest-900">
-                          {user._count.activities}
-                        </p>
-                        <p className="text-xs text-forest-600">Activities</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <div className="space-y-2">
+                <div className="space-y-1">
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-forest-700 border-tea-200 bg-white hover:bg-tea-50"
+                    size="sm"
+                    className="w-full justify-start text-gray-700 border-gray-200 bg-white hover:bg-gray-50 text-sm py-2"
                     onClick={handleProfileClick}
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -141,21 +127,10 @@ const UserMenu: React.FC = () => {
                     Профиль
                   </Button>
                   
-                  {/* <Button
-                    variant="outline"
-                    className="w-full justify-start text-forest-700 border-tea-200 bg-white hover:bg-tea-50"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Настройки
-                  </Button> */}
-                  
                   <Button
                     variant="outline"
-                    className="w-full justify-start text-red-600 border-red-200 bg-white hover:bg-red-50"
+                    size="sm"
+                    className="w-full justify-start text-red-600 border-red-200 bg-white hover:bg-red-50 text-sm py-2"
                     onClick={handleLogout}
                     disabled={isLoading}
                   >

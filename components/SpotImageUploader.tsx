@@ -87,8 +87,8 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
 
 
   return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium text-tea-700 mb-2">
+    <div className="mb-3 sm:mb-4">
+      <label className="block text-xs sm:text-sm font-medium text-tea-700 mb-2">
         Фото спота
       </label>
       
@@ -96,7 +96,7 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
         whileHover={{ scale: uploading ? 1 : 1.02 }}
         whileTap={{ scale: uploading ? 1 : 0.98 }}
         className={`
-          relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200
+          relative border-2 border-dashed rounded-xl p-4 sm:p-6 text-center cursor-pointer transition-all duration-200
           ${dragActive 
             ? 'border-tea-500 bg-tea-50' 
             : 'border-tea-300 bg-tea-25 hover:border-tea-400 hover:bg-tea-50'
@@ -132,16 +132,16 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
             animate={{ opacity: 1 }}
             className="flex flex-col items-center"
           >
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-tea-500 mb-2"></div>
-            <p className="text-tea-600 font-medium">Загрузка...</p>
+            <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-tea-500 mb-2"></div>
+            <p className="text-tea-600 font-medium text-sm sm:text-base">Загрузка...</p>
           </motion.div>
         ) : (
           <div className="flex flex-col items-center">
-            <div className="text-3xl mb-2">📷</div>
-            <p className="text-tea-700 font-medium mb-1">
+            <div className="text-2xl sm:text-3xl mb-2">📷</div>
+            <p className="text-tea-700 font-medium mb-1 text-sm sm:text-base">
               Нажмите или перетащите фото
             </p>
-            <p className="text-sm text-tea-500">
+            <p className="text-xs sm:text-sm text-tea-500">
               JPEG, PNG, GIF, WebP (макс. 10MB)
             </p>
           </div>

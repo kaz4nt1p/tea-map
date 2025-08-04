@@ -62,6 +62,8 @@ export default function EditActivityPage() {
     setIsSubmitting(true);
     try {
       console.log('Submitting form data:', formData);
+      console.log('Tea name in form data:', formData.tea_name);
+      console.log('Tea type in form data:', formData.tea_type);
       console.log('duration_minutes type:', typeof formData.duration_minutes, 'value:', formData.duration_minutes);
       
       await activitiesApi.updateActivity(activityId, formData);

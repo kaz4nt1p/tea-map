@@ -261,6 +261,16 @@ npx prisma generate                    # Regenerate client
 - **Mobile Responsive**: Enhanced activity detail page layout with proper text overflow handling
 - **Production Security**: Enterprise-grade authentication suitable for production deployment (Security Score: 8/10)
 
+### Production Fixes & Optimizations (July 24, 2025)
+- **Token Refresh Stability**: Fixed comprehensive token expiration issues across all components by replacing direct fetch() calls with apiClient
+- **API Timeout Resolution**: Fixed proxy routing issues by correcting BACKEND_URL environment variables for internal server communication
+- **Photo Upload Fixes**: Corrected field name mismatch ('file' → 'image') and fixed Cloudinary URL handling to prevent local path returns
+- **Mobile Upload Support**: Increased nginx (20MB) and backend (10MB) limits to support high-resolution mobile photos, fixing 413 errors
+- **Comment Timeout Optimization**: Extended API timeouts (10s → 30s frontend, 60s nginx proxy) to handle slower database operations without user-facing errors
+- **Activity Management**: Fixed 401 errors in activity deletion, viewing, and liking by implementing consistent apiClient usage
+- **Type Safety**: Resolved Activity interface compatibility issues with proper type casting for frontend-backend communication
+- **Server Stability**: All fixes deployed with zero downtime using PM2 process management and nginx hot reloading
+
 ## Authentication System Security Analysis & Improvement Plan
 
 ### Current System Overview
@@ -414,3 +424,9 @@ X-Content-Type-Options: nosniff
 - **< 0.1%** authentication failure rate
 - **100%** token refresh success rate
 - **Zero** cross-tab authentication inconsistencies
+```
+
+## Memory Management
+
+### Project Interaction Memories
+- **to memorize**

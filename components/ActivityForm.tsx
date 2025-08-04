@@ -82,6 +82,11 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
       newErrors.tea_type = 'Выберите тип чая';
     }
     
+    // Tea name is optional but encouraged
+    // if (!formData.tea_name?.trim()) {
+    //   newErrors.tea_name = 'Укажите название чая';
+    // }
+    
     if (formData.duration_minutes && formData.duration_minutes <= 0) {
       newErrors.duration_minutes = 'Продолжительность должна быть больше 0';
     }
@@ -208,7 +213,7 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
           {/* Tea Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Название чая
+              🍵 Название чая
             </label>
             <input
               type="text"
@@ -217,6 +222,11 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
               placeholder="Например: Лунцзин, Эрл Грей, Да Хун Пао..."
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
+            {errors.tea_name ? (
+              <p className="text-xs text-red-600 mt-1">{errors.tea_name}</p>
+            ) : (
+              <p className="text-xs text-gray-500 mt-1">Укажите конкретное название чая, который вы пьете</p>
+            )}
           </div>
 
           {/* Spot Selection */}

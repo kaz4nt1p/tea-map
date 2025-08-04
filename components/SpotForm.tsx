@@ -27,20 +27,25 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
-      className="bg-white p-6 rounded-2xl max-w-md mx-auto shadow-xl border border-tea-200"
+      className="bg-white rounded-2xl w-full mx-auto shadow-xl border border-tea-200 flex flex-col"
+      style={{ 
+        maxHeight: 'inherit',
+        height: 'fit-content'
+      }}
     >
+      <div className="overflow-y-auto flex-1 p-4 sm:p-6" style={{ WebkitOverflowScrolling: 'touch' }}>
       <motion.div
         initial={{ y: -10, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="text-center mb-6"
+        className="text-center mb-4 sm:mb-6"
       >
-        <div className="text-3xl mb-2">🍃</div>
-        <h2 className="text-xl font-bold text-tea-800">Добавить новый спот</h2>
-        <p className="text-sm text-tea-600 mt-1">Поделитесь своим любимым местом для чая</p>
+        <div className="text-2xl sm:text-3xl mb-2">🍃</div>
+        <h2 className="text-lg sm:text-xl font-bold text-tea-800">Добавить новый спот</h2>
+        <p className="text-xs sm:text-sm text-tea-600 mt-1">Поделитесь своим любимым местом для чая</p>
       </motion.div>
       
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         <div>
           <SpotImageUploader onUpload={setImage} />
           {image && (
@@ -53,14 +58,14 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
               <img 
                 src={image} 
                 alt="preview" 
-                className="w-full max-h-44 object-cover rounded-xl border border-tea-200"
+                className="w-full max-h-24 sm:max-h-32 object-cover rounded-xl border border-tea-200"
               />
             </motion.div>
           )}
         </div>
         
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-tea-700 mb-1">
+          <label htmlFor="name" className="block text-xs sm:text-sm font-medium text-tea-700 mb-1">
             Название <span className="text-red-500">*</span>
           </label>
           <input
@@ -70,12 +75,12 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
             value={name}
             onChange={e => setName(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-tea-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors placeholder-tea-400"
+            className="w-full px-3 py-2 text-sm sm:text-base border border-tea-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors placeholder-tea-400"
           />
         </div>
         
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-tea-700 mb-1">
+          <label htmlFor="description" className="block text-xs sm:text-sm font-medium text-tea-700 mb-1">
             Краткое описание
           </label>
           <input
@@ -84,12 +89,12 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
             placeholder="Что особенного в этом месте?"
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-tea-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors placeholder-tea-400"
+            className="w-full px-3 py-2 text-sm sm:text-base border border-tea-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors placeholder-tea-400"
           />
         </div>
         
         <div>
-          <label htmlFor="longDescription" className="block text-sm font-medium text-tea-700 mb-1">
+          <label htmlFor="longDescription" className="block text-xs sm:text-sm font-medium text-tea-700 mb-1">
             Подробное описание
           </label>
           <textarea
@@ -98,16 +103,16 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
             value={longDescription}
             onChange={e => setLongDescription(e.target.value)}
             rows={3}
-            className="w-full px-3 py-2 border border-tea-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors placeholder-tea-400 resize-vertical"
+            className="w-full px-3 py-2 text-sm sm:text-base border border-tea-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-tea-500 focus:border-transparent transition-colors placeholder-tea-400 resize-vertical"
           />
         </div>
         
-        <div className="flex gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row gap-3 pt-2">
           <motion.button
             type="submit"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="flex-1 bg-tea-600 hover:bg-tea-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-tea-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-tea-600 hover:bg-tea-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-tea-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             disabled={!name.trim()}
           >
             ✨ Добавить спот
@@ -117,12 +122,13 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
             onClick={onCancel}
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
-            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+            className="px-3 sm:px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 text-sm sm:text-base"
           >
             Отмена
           </motion.button>
         </div>
       </form>
+      </div>
     </motion.div>
   );
 }

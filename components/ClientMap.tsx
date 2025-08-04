@@ -111,9 +111,15 @@ export default function ClientMap({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const onMapClickRef = useRef(onMapClick);
   const [pendingSpot, setPendingSpot] = useState<Spot | null>(null);
   const [center, setCenter] = useState<[number, number]>([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]);
   const [shouldCenter, setShouldCenter] = useState(false);
+  
+  // Keep the ref updated with the latest callback
+  useEffect(() => {
+    onMapClickRef.current = onMapClick;
+  }, [onMapClick]);
 
   // Исправление работы handleRandomSpot
   function handleRandomSpot() {
@@ -146,7 +152,17 @@ export default function ClientMap({
         leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; OpenStreetMap contributors',
         }).addTo(mapRef.current);
-        // УБРАН обработчик клика отсюда!
+        
+        // Set up click handler immediately when map is created
+        const handleMapClick = (e: any) => {
+          if (onMapClickRef.current) {
+            mapRef.current.setView([e.latlng.lat, e.latlng.lng], mapRef.current.getZoom(), { animate: true });
+            setCenter([e.latlng.lat, e.latlng.lng]);
+            setShouldCenter(false);
+            onMapClickRef.current(e.latlng.lat, e.latlng.lng);
+          }
+        };
+        mapRef.current.on('click', handleMapClick);
       }
     })();
     return () => {
@@ -158,18 +174,6 @@ export default function ClientMap({
     };
   }, []); // onMapClick не нужен тут
 
-  // Центрировать карту по клику на карту (добавление спота)
-  useEffect(() => {
-    if (!onMapClick) return;
-    if (!mapRef.current) return;
-    mapRef.current.off('click');
-    mapRef.current.on('click', (e: any) => {
-      mapRef.current.setView([e.latlng.lat, e.latlng.lng], mapRef.current.getZoom(), { animate: true });
-      setCenter([e.latlng.lat, e.latlng.lng]);
-      setShouldCenter(false);
-      onMapClick(e.latlng.lat, e.latlng.lng);
-    });
-  }, [onMapClick, mapRef.current]);
 
   // Центрировать карту при первом рендере
   useEffect(() => {

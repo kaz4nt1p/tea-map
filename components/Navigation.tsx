@@ -52,14 +52,14 @@ export const Navigation: React.FC = () => {
   }
 
   return (
-    <nav className="bg-gradient-to-r from-sage-50 to-tea-50 shadow-sm border-b border-tea-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
+    <nav className="bg-gradient-to-r from-sage-50 to-tea-50 shadow-sm border-b border-tea-200 w-full">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 w-full">
+        <div className="flex justify-between items-center h-16 w-full">
           {/* Logo */}
-          <Link href="/dashboard" className="flex items-center">
+          <Link href="/dashboard" className="flex items-center flex-shrink-0">
             <div className="flex-shrink-0 flex items-center">
               <TeaIconFilled size={24} className="text-forest-600" />
-              <span className="ml-2 text-xl font-bold text-forest-800">Tea Map</span>
+              <span className="ml-2 text-lg sm:text-xl font-bold text-forest-800">Tea Map</span>
             </div>
           </Link>
 
@@ -85,9 +85,9 @@ export const Navigation: React.FC = () => {
           </div>
 
           {/* Right side - User menu or auth button */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0 relative">
             {isAuthenticated ? (
-              <UserMenu />
+              <UserMenu onMenuOpen={() => setIsMobileMenuOpen(false)} />
             ) : (
               <Link
                 href="/auth"
@@ -113,7 +113,7 @@ export const Navigation: React.FC = () => {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
+          <div className="md:hidden border-t border-gray-200 py-4 bg-white relative z-50">
             <div className="space-y-1">
               {filteredNavItems.map((item) => {
                 const Icon = item.icon;

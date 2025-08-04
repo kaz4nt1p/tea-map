@@ -57,6 +57,20 @@ function MapPageContent() {
     fetchSpots();
   }, [fetchSpots]);
 
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    if (formCoords || activitySpot) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [formCoords, activitySpot]);
+
   // Handle spot query parameter to auto-open spot modal
   useEffect(() => {
     const spotId = searchParams.get('spot');
@@ -194,13 +208,34 @@ function MapPageContent() {
       )}
       
       {formCoords && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <SpotForm
-            lat={formCoords.lat}
-            lng={formCoords.lng}
-            onSubmit={handleFormSubmit}
-            onCancel={() => setFormCoords(null)}
-          />
+        <div 
+          className="fixed inset-0 bg-black/40 z-50 overflow-y-auto overscroll-contain"
+          style={{ 
+            height: '100vh', 
+            height: '100dvh',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setFormCoords(null);
+            }
+          }}
+        >
+          <div className="min-h-full flex items-center justify-center p-2 sm:p-4 py-4 sm:py-8">
+            <div 
+              className="w-full max-w-md mx-auto" 
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxHeight: 'calc(100vh - 2rem)', maxHeight: 'calc(100dvh - 2rem)' }}
+            >
+              <SpotForm
+                lat={formCoords.lat}
+                lng={formCoords.lng}
+                onSubmit={handleFormSubmit}
+                onCancel={() => setFormCoords(null)}
+              />
+            </div>
+          </div>
           {loading && <div className="absolute top-5 right-5 text-gray-700">Сохраняем...</div>}
         </div>
       )}

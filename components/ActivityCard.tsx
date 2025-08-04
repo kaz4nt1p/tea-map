@@ -109,12 +109,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow cursor-pointer overflow-hidden"
+      className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden border border-gray-100 hover:border-gray-200"
       onClick={handleCardClick}
       data-testid="activity-card"
     >
       {/* Header with user info */}
-      <div className="flex items-center p-4 pb-3">
+      <div className="flex items-center p-3 sm:p-4 pb-2 sm:pb-3">
         <div 
           className="flex items-center flex-1 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2"
           onClick={handleUserClick}
@@ -135,14 +135,20 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
           </div>
         </div>
         
-        {/* Tea type indicator */}
-        {activity.tea_type && (
-          <div className="flex items-center text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-full">
-            <span className="mr-1">{getTeaTypeIcon(activity.tea_type)}</span>
+        {/* Tea information */}
+        {(activity.tea_type || activity.tea_name) && (
+          <div className="flex items-center text-sm bg-green-50 border border-green-200 px-3 py-1.5 rounded-full">
+            <span className="mr-2">{getTeaTypeIcon(activity.tea_type)}</span>
             <span>
-              {getTeaTypeLabel(activity.tea_type)}
-              {activity.tea_name && (
-                <span className="text-gray-500 ml-1">• {activity.tea_name}</span>
+              {activity.tea_name ? (
+                <>
+                  <span className="font-semibold text-green-800">{activity.tea_name}</span>
+                  {activity.tea_type && (
+                    <span className="text-green-600 ml-1 text-xs">({getTeaTypeLabel(activity.tea_type)})</span>
+                  )}
+                </>
+              ) : (
+                <span className="font-medium text-green-700">{getTeaTypeLabel(activity.tea_type)}</span>
               )}
             </span>
           </div>
@@ -150,13 +156,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
       </div>
 
       {/* Activity content */}
-      <div className="px-4 pb-3">
-        <h4 className="font-semibold text-lg text-gray-900 mb-2">
+      <div className="px-3 sm:px-4 pb-2 sm:pb-3">
+        <h4 className="font-semibold text-base sm:text-lg text-gray-900 mb-2">
           {activity.title}
         </h4>
         
         {activity.description && (
-          <p className="text-gray-700 text-sm mb-3 line-clamp-3">
+          <p className="text-gray-700 text-xs sm:text-sm mb-3 line-clamp-3">
             {activity.description}
           </p>
         )}
@@ -192,7 +198,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
       {/* Activity photos */}
       {activity.media && activity.media.length > 0 && (
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4 px-1 sm:px-0">
           <ActivityPhotoGrid 
             photos={activity.media}
             onPhotoClick={(photoIndex) => {
@@ -205,12 +211,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
       {/* Taste notes */}
       {activity.taste_notes && (
-        <div className="px-4 py-3 bg-gray-50">
-          <div className="flex items-center text-sm text-gray-600 mb-1">
-            <Leaf className="w-4 h-4 mr-1" />
+        <div className="px-3 sm:px-4 py-2 sm:py-3 bg-gray-50">
+          <div className="flex items-center text-xs sm:text-sm text-gray-600 mb-1">
+            <Leaf className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
             <span className="font-medium">Заметки о вкусе:</span>
           </div>
-          <p className="text-sm text-gray-700 line-clamp-2">
+          <p className="text-xs sm:text-sm text-gray-700 line-clamp-2">
             {activity.taste_notes}
           </p>
         </div>
@@ -218,7 +224,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
       {/* Comments Preview */}
       {activity.comments && activity.comments.length > 0 && (
-        <div className="px-4 py-3 border-t border-gray-100">
+        <div className="px-3 sm:px-4 py-2 sm:py-3 border-t border-gray-100">
           <div className="space-y-2">
             {activity.comments.slice(-2).map((comment: ActivityComment) => (
               <div key={comment.id} className="flex items-start space-x-2">
@@ -256,39 +262,46 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
       )}
 
       {/* Action buttons */}
-      <div className="flex items-center justify-between px-4 py-3 border-t border-gray-100">
-        <div className="flex items-center space-x-6">
-          <button 
-            onClick={handleLike}
-            disabled={isLiking}
-            className={`flex items-center space-x-1 text-sm transition-colors ${
-              isLiked 
-                ? 'text-red-500 hover:text-red-600' 
-                : 'text-gray-500 hover:text-red-500'
-            }`}
-            data-testid="like-button"
-          >
-            <Heart 
-              className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} 
-            />
-            <span data-testid="like-count">{likeCount}</span>
-          </button>
-          
-          <button 
-            onClick={handleCommentClick}
-            className="flex items-center space-x-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>{activity.comment_count || 0}</span>
-          </button>
-        </div>
-        
-        {/* Weather indicator */}
-        {activity.weather_conditions && (
-          <div className="text-sm text-gray-500">
-            <span>🌤️ {activity.weather_conditions}</span>
+      <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-100 bg-gray-50/30">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-8">
+            <button 
+              onClick={handleLike}
+              disabled={isLiking}
+              className={`flex items-center space-x-2 text-sm font-medium transition-all duration-200 hover:scale-105 ${
+                isLiked 
+                  ? 'text-red-500 hover:text-red-600' 
+                  : 'text-gray-600 hover:text-red-500'
+              }`}
+              data-testid="like-button"
+            >
+              <Heart 
+                className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} 
+              />
+              <span data-testid="like-count" className="min-w-[1rem] text-center">
+                {likeCount}
+              </span>
+            </button>
+            
+            <button 
+              onClick={handleCommentClick}
+              className="flex items-center space-x-2 text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-200 hover:scale-105"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span className="min-w-[1rem] text-center">{activity.comment_count || 0}</span>
+            </button>
           </div>
-        )}
+          
+          {/* Weather indicator */}
+          {activity.weather_conditions && (
+            <div className="flex items-center space-x-2 bg-amber-50 border border-amber-200 rounded-full px-3 py-1.5">
+              <span className="text-lg">🌤️</span>
+              <span className="text-sm font-medium text-amber-800 leading-tight">
+                {activity.weather_conditions}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

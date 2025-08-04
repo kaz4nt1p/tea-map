@@ -152,16 +152,16 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden w-full">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
+      <div className="bg-white shadow-sm border-b border-gray-200 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full min-w-0">
+          <div className="flex justify-between items-center py-6 w-full min-w-0">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
                 Чайная лента
               </h1>
-              <p className="text-gray-600">
+              <p className="text-sm sm:text-base text-gray-600 truncate">
                 Последние чайные сессии сообщества
               </p>
             </div>
@@ -169,18 +169,19 @@ export default function DashboardPage() {
             {isAuthenticated && (
               <button
                 onClick={() => setShowActivityForm(true)}
-                className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                className="flex items-center px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm sm:text-base ml-4 flex-shrink-0"
               >
-                <Feather className="w-4 h-4 mr-2" />
-                Записать сессию
+                <Feather className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Записать сессию</span>
+                <span className="sm:hidden">Записать</span>
               </button>
             )}
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full min-w-0">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 w-full min-w-0">
           {/* Left Sidebar - User Info */}
           <div className="lg:col-span-1">
             <div className="space-y-6">
