@@ -34,6 +34,15 @@ router.get('/', optionalAuth, asyncHandler(async (req, res) => {
           avatar_url: true
         }
       },
+      media: {
+        select: {
+          id: true,
+          file_path: true,
+          file_type: true,
+          alt_text: true,
+          created_at: true
+        }
+      },
       activities: {
         select: {
           id: true,
@@ -229,7 +238,17 @@ router.post('/', authenticateToken, validate(createSpotSchema), asyncHandler(asy
  */
 router.put('/:id', authenticateToken, validate(createSpotSchema), asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, description, long_description, latitude, longitude, address, amenities, accessibility_info, image_url } = req.body;
+  const { name, description, long_description, latitude, longitude, address, amenities, accessibility_info, image_url, media_urls } = req.body;
+  
+  console.log('Updating spot with data:', {
+    id,
+    name,
+    description,
+    long_description,
+    media_urls: media_urls ? media_urls : 'none',
+    media_urls_count: media_urls ? media_urls.length : 0,
+    media_urls_type: typeof media_urls
+  });
   
   // Check if spot exists and user owns it
   const existingSpot = await prisma.spot.findUnique({
@@ -245,34 +264,88 @@ router.put('/:id', authenticateToken, validate(createSpotSchema), asyncHandler(a
     throw new AuthorizationError('You can only update your own spots');
   }
   
-  const spot = await prisma.spot.update({
-    where: { id },
-    data: {
-      name,
-      description: description || '',
-      long_description: long_description || '',
-      latitude,
-      longitude,
-      address: address || '',
-      amenities: amenities || [],
-      accessibility_info: accessibility_info || '',
-      image_url: image_url || ''
-    },
-    include: {
-      creator: {
-        select: {
-          id: true,
-          username: true,
-          display_name: true,
-          avatar_url: true
-        }
-      },
-      _count: {
-        select: {
-          activities: true
+  // Update spot and handle media in a transaction
+  const spot = await prisma.$transaction(async (tx) => {
+    // Update the spot
+    const updatedSpot = await tx.spot.update({
+      where: { id },
+      data: {
+        name,
+        description: description || '',
+        long_description: long_description || '',
+        latitude,
+        longitude,
+        address: address || '',
+        amenities: amenities || [],
+        accessibility_info: accessibility_info || '',
+        image_url: image_url || ''
+      }
+    });
+
+    // Handle media updates if provided
+    if (media_urls && Array.isArray(media_urls)) {
+      console.log('Processing media_urls:', media_urls);
+      
+      // Delete existing media for this spot
+      const deletedMedia = await tx.media.deleteMany({
+        where: { spot_id: id }
+      });
+      console.log('Deleted existing media records:', deletedMedia.count);
+
+      // Create new media records
+      if (media_urls.length > 0) {
+        const mediaData = media_urls.map((url, index) => ({
+          user_id: req.user.id,
+          spot_id: id,
+          file_path: url,
+          file_type: 'image',
+          file_size: 0,
+          alt_text: `${name} photo ${index + 1}`
+        }));
+
+        console.log('Creating media records:', mediaData);
+        const createdMedia = await tx.media.createMany({
+          data: mediaData
+        });
+        console.log('Created media records:', createdMedia.count);
+      }
+    } else {
+      console.log('No media_urls provided or not an array:', { media_urls, type: typeof media_urls });
+    }
+
+    // Return updated spot with media
+    return await tx.spot.findUnique({
+      where: { id },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            username: true,
+            display_name: true,
+            avatar_url: true
+          }
+        },
+        media: {
+          select: {
+            id: true,
+            file_path: true,
+            file_type: true,
+            alt_text: true,
+            created_at: true
+          }
+        },
+        _count: {
+          select: {
+            activities: true
+          }
         }
       }
-    }
+    });
+  });
+  
+  console.log('Spot updated successfully:', { 
+    id: spot.id, 
+    mediaCount: spot.media ? spot.media.length : 0 
   });
   
   successResponse(res, { spot }, 'Spot updated successfully');
@@ -347,6 +420,15 @@ router.get('/user/:username', optionalAuth, asyncHandler(async (req, res) => {
           username: true,
           display_name: true,
           avatar_url: true
+        }
+      },
+      media: {
+        select: {
+          id: true,
+          file_path: true,
+          file_type: true,
+          alt_text: true,
+          created_at: true
         }
       },
       activities: {

@@ -37,9 +37,6 @@ const authLimiter = rateLimit({
     }
     return false;
   },
-  onLimitReached: (req) => {
-    console.log(`[Auth Rate Limit] EXCEEDED for ${req.ip} on ${req.path}`);
-  }
 });
 
 // TEMPORARILY DISABLED: Apply rate limiting to auth endpoints only in production

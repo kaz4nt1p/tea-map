@@ -244,6 +244,15 @@ const createSpotSchema = Joi.object({
     .allow('')
     .messages({
       'string.uri': 'Image URL must be a valid URL'
+    }),
+  
+  media_urls: Joi.array()
+    .items(Joi.string().uri())
+    .max(5)
+    .optional()
+    .messages({
+      'array.max': 'Maximum 5 photos allowed',
+      'string.uri': 'Each media URL must be a valid URL'
     })
 });
 
