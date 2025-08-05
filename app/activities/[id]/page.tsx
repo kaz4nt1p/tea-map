@@ -51,9 +51,6 @@ export default function ActivityDetailPage() {
     
     try {
       const data = await activitiesApi.getActivityById(activityId);
-      console.log('Activity data:', data.activity); // Debug log
-      console.log('Tea name:', data.activity.tea_name); // Debug log
-      console.log('Tea type:', data.activity.tea_type); // Debug log
       setActivity(data.activity as unknown as Activity);
       setIsLiked(data.activity.isLiked || false);
       setLikeCount(data.activity._count?.likes || 0);

@@ -4,7 +4,10 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import apiClient from "../lib/api";
 
-export default function SpotImageUploader({ onUpload }: { onUpload: (url: string) => void }) {
+export default function SpotImageUploader({ onUpload, multiple = false }: { 
+  onUpload: (url: string) => void; 
+  multiple?: boolean;
+}) {
   const [uploading, setUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,9 +62,11 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileUpload(file);
+    const files = Array.from(e.target.files || []);
+    if (multiple && files.length > 1) {
+      files.forEach(file => handleFileUpload(file));
+    } else if (files[0]) {
+      handleFileUpload(files[0]);
     }
   };
 
@@ -79,9 +84,11 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
     e.preventDefault();
     setDragActive(false);
     
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      handleFileUpload(file);
+    const files = Array.from(e.dataTransfer.files || []);
+    if (multiple && files.length > 1) {
+      files.forEach(file => handleFileUpload(file));
+    } else if (files[0]) {
+      handleFileUpload(files[0]);
     }
   };
 
@@ -121,6 +128,7 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          multiple={multiple}
           onChange={handleFileSelect}
           className="hidden"
           disabled={uploading}
@@ -139,10 +147,10 @@ export default function SpotImageUploader({ onUpload }: { onUpload: (url: string
           <div className="flex flex-col items-center">
             <div className="text-2xl sm:text-3xl mb-2">📷</div>
             <p className="text-tea-700 font-medium mb-1 text-sm sm:text-base">
-              Нажмите или перетащите фото
+              Нажмите или перетащите {multiple ? 'фото' : 'фото'}
             </p>
             <p className="text-xs sm:text-sm text-tea-500">
-              JPEG, PNG, GIF, WebP (макс. 10MB)
+              JPEG, PNG, GIF, WebP (макс. 10MB){multiple ? ', до 5 файлов' : ''}
             </p>
           </div>
         )}

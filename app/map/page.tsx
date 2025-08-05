@@ -40,7 +40,9 @@ function MapPageContent() {
         image: spot.image_url || '',
         lat: spot.latitude,
         lng: spot.longitude,
-        created_at: spot.created_at
+        created_at: spot.created_at,
+        creator: spot.creator, // Include creator data for ownership checks
+        media: (spot as any).media // Include media data for photo gallery
       }));
       
       setSpots(convertedSpots);
@@ -204,6 +206,16 @@ function MapPageContent() {
           spot={selectedSpot} 
           onClose={() => setSelectedSpot(null)} 
           onRecordActivity={handleRecordActivity}
+          onSpotUpdated={(updatedSpot) => {
+            // Update the spots list with the updated spot
+            setSpots(prevSpots => 
+              prevSpots.map(spot => 
+                spot.id === updatedSpot.id ? updatedSpot : spot
+              )
+            );
+            // Update the selected spot to show changes immediately
+            setSelectedSpot(updatedSpot);
+          }}
         />
       )}
       
@@ -211,7 +223,6 @@ function MapPageContent() {
         <div 
           className="fixed inset-0 bg-black/40 z-50 overflow-y-auto overscroll-contain"
           style={{ 
-            height: '100vh', 
             height: '100dvh',
             WebkitOverflowScrolling: 'touch',
             touchAction: 'pan-y'
@@ -226,7 +237,7 @@ function MapPageContent() {
             <div 
               className="w-full max-w-md mx-auto" 
               onClick={(e) => e.stopPropagation()}
-              style={{ maxHeight: 'calc(100vh - 2rem)', maxHeight: 'calc(100dvh - 2rem)' }}
+              style={{ maxHeight: 'calc(100dvh - 2rem)' }}
             >
               <SpotForm
                 lat={formCoords.lat}
