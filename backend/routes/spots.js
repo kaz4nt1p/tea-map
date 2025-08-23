@@ -210,7 +210,7 @@ router.post('/', authenticateToken, validate(createSpotSchema), asyncHandler(asy
       address: address || '',
       amenities: amenities || [],
       accessibility_info: accessibility_info || '',
-      image_url: image_url || ''
+      image_url: '' // Legacy field - photos now use media table
     },
     include: {
       creator: {
@@ -278,7 +278,7 @@ router.put('/:id', authenticateToken, validate(createSpotSchema), asyncHandler(a
         address: address || '',
         amenities: amenities || [],
         accessibility_info: accessibility_info || '',
-        image_url: image_url || ''
+        image_url: '' // Legacy field - photos now use media table
       }
     });
 

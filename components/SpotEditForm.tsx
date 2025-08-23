@@ -67,7 +67,7 @@ export default function SpotEditForm({ spot, onSave, onCancel }: SpotEditFormPro
         address: spot.address || '',
         amenities: [],
         accessibility_info: '',
-        image_url: photos[0] || '', // Use first photo as main image
+        image_url: '', // Legacy field - no longer used, photos go to media table
         media_urls: photos // Send all photos to backend
       };
 
