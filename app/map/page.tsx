@@ -206,15 +206,27 @@ function MapPageContent() {
           spot={selectedSpot} 
           onClose={() => setSelectedSpot(null)} 
           onRecordActivity={handleRecordActivity}
-          onSpotUpdated={(updatedSpot) => {
-            // Update the spots list with the updated spot
-            setSpots(prevSpots => 
-              prevSpots.map(spot => 
-                spot.id === updatedSpot.id ? updatedSpot : spot
-              )
-            );
-            // Update the selected spot to show changes immediately
-            setSelectedSpot(updatedSpot);
+          onSpotUpdated={async (updatedSpot) => {
+            // Refetch all spots to get fresh data including photos
+            await fetchSpots();
+            // Find and set the updated spot from fresh data
+            const freshSpots = await spotsApi.getSpots();
+            const freshSpot = freshSpots.spots.find(s => s.id === updatedSpot.id);
+            if (freshSpot) {
+              const convertedSpot = {
+                id: freshSpot.id,
+                name: freshSpot.name,
+                description: freshSpot.description,
+                longDescription: freshSpot.long_description,
+                image: freshSpot.image_url || '',
+                lat: freshSpot.latitude,
+                lng: freshSpot.longitude,
+                created_at: freshSpot.created_at,
+                creator: freshSpot.creator,
+                media: (freshSpot as any).media
+              };
+              setSelectedSpot(convertedSpot);
+            }
           }}
         />
       )}
