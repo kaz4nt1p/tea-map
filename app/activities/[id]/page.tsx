@@ -179,10 +179,10 @@ export default function ActivityDetailPage() {
         <div className="text-center">
           <div className="text-red-600 mb-4">{error}</div>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
-            Вернуться назад
+            К активностям
           </button>
         </div>
       </div>
@@ -195,10 +195,10 @@ export default function ActivityDetailPage() {
         <div className="text-center">
           <div className="text-gray-600 mb-4">Активность не найдена</div>
           <button
-            onClick={() => router.back()}
+            onClick={() => router.push('/dashboard')}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
           >
-            Вернуться назад
+            К активностям
           </button>
         </div>
       </div>
@@ -214,11 +214,11 @@ export default function ActivityDetailPage() {
         <div className="max-w-4xl mx-auto px-3 sm:px-4 lg:px-8 w-full">
           <div className="flex items-center justify-between py-4 min-w-0">
             <button
-              onClick={() => router.back()}
+              onClick={() => router.push('/dashboard')}
               className="flex items-center text-gray-600 hover:text-gray-900 transition-colors"
             >
               <ArrowLeft className="w-5 h-5 mr-2" />
-              Назад
+              К активностям
             </button>
             
             <div className="flex items-center space-x-1 min-w-0 flex-shrink-0">
