@@ -130,7 +130,7 @@ function MapPageContent() {
       const result = await spotsApi.createSpot(createData);
       console.log('Created spot result:', result);
       console.log('Spot image_url:', result.spot?.image_url);
-      console.log('Spot media:', result.spot?.media);
+      console.log('Spot media:', (result.spot as any)?.media);
 
       await fetchSpots();
       setFormCoords(null);
