@@ -109,6 +109,23 @@ function MapPageContent() {
 
   // Handle form submit
   const handleFormSubmit = async (spotData: Omit<Spot, 'id' | 'created_at'>) => {
+    console.log('[MapPage] Form submission started');
+    console.log('[MapPage] Spot data from form:', {
+      name: spotData.name,
+      description: spotData.description,
+      longDescription: spotData.longDescription,
+      image: spotData.image,
+      hasImage: !!spotData.image,
+      lat: spotData.lat,
+      lng: spotData.lng
+    });
+
+    if (!spotData.image || spotData.image.trim() === '') {
+      console.error('[MapPage] ERROR: No image URL in spotData!');
+      toast.error('Ошибка: изображение не загружено');
+      return;
+    }
+
     setLoading(true);
     try {
       const createData: CreateSpotData = {
@@ -120,17 +137,30 @@ function MapPageContent() {
         address: '', // You can add address field to the form later
         amenities: [],
         accessibility_info: '',
-        image_url: spotData.image || ''
+        image_url: spotData.image
       };
 
-      console.log('Spot data from form:', spotData);
-      console.log('Create data being sent:', createData);
-      console.log('Image URL being sent:', createData.image_url);
+      console.log('[MapPage] Create data being sent to backend:', {
+        name: createData.name,
+        description: createData.description,
+        long_description: createData.long_description,
+        image_url: createData.image_url,
+        latitude: createData.latitude,
+        longitude: createData.longitude
+      });
 
       const result = await spotsApi.createSpot(createData);
-      console.log('Created spot result:', result);
-      console.log('Spot image_url:', result.spot?.image_url);
-      console.log('Spot media:', (result.spot as any)?.media);
+
+      console.log('[MapPage] Spot creation successful:', {
+        spotId: result.spot?.id,
+        image_url: result.spot?.image_url,
+        hasMedia: !!(result.spot as any)?.media,
+        mediaCount: (result.spot as any)?.media?.length || 0
+      });
+
+      if (!result.spot?.image_url) {
+        console.warn('[MapPage] WARNING: Spot created but image_url is empty in response');
+      }
 
       await fetchSpots();
       setFormCoords(null);
@@ -149,13 +179,13 @@ function MapPageContent() {
           creator: result.spot.creator,
           media: (result.spot as any).media
         };
-        console.log('Converted spot for modal:', convertedSpot);
+        console.log('[MapPage] Converted spot for modal:', convertedSpot);
         setSelectedSpot(convertedSpot);
       }
 
       toast.success('Спот успешно добавлен!');
     } catch (error) {
-      console.error('Failed to create spot:', error);
+      console.error('[MapPage] Failed to create spot:', error);
       toast.error('Ошибка при добавлении спота');
     } finally {
       setLoading(false);

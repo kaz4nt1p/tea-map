@@ -14,12 +14,20 @@ export default function SpotImageUploader({ onUpload, onUploadStateChange, multi
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (file: File) => {
+    console.log('[SpotImageUploader] Starting upload for file:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+
     if (!file.type.startsWith('image/')) {
+      console.error('[SpotImageUploader] Invalid file type:', file.type);
       toast.error('Пожалуйста, выберите изображение');
       return;
     }
 
     if (file.size > 10 * 1024 * 1024) {
+      console.error('[SpotImageUploader] File too large:', file.size);
       toast.error('Файл слишком большой. Максимальный размер: 10MB');
       return;
     }
@@ -31,6 +39,7 @@ export default function SpotImageUploader({ onUpload, onUploadStateChange, multi
       const formData = new FormData();
       formData.append('image', file);
 
+      console.log('[SpotImageUploader] Sending request to /api/upload');
       const response = await apiClient.post('/api/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -38,15 +47,27 @@ export default function SpotImageUploader({ onUpload, onUploadStateChange, multi
       });
 
       const data = response.data;
+      console.log('[SpotImageUploader] Upload response received:', {
+        url: data.url,
+        publicId: data.publicId,
+        hasThumbnails: !!data.thumbnails
+      });
+
+      if (!data.url) {
+        console.error('[SpotImageUploader] ERROR: No URL in response!', data);
+        throw new Error('Upload succeeded but no URL returned');
+      }
+
       const thumbnailUrl = data.thumbnails?.medium || data.thumbnails?.small || data.url;
+      console.log('[SpotImageUploader] Calling onUpload callback with URL:', data.url);
       onUpload(data.url, thumbnailUrl);
 
       // Log additional Cloudinary metadata for debugging
       if (data.thumbnails) {
-        console.log('Cloudinary thumbnails available:', data.thumbnails);
+        console.log('[SpotImageUploader] Cloudinary thumbnails available:', data.thumbnails);
       }
       if (data.publicId) {
-        console.log('Cloudinary public ID:', data.publicId);
+        console.log('[SpotImageUploader] Cloudinary public ID:', data.publicId);
       }
 
       return data;
@@ -59,6 +80,7 @@ export default function SpotImageUploader({ onUpload, onUploadStateChange, multi
         error: ('Ошибка загрузки изображения'),
       });
     } catch (error: any) {
+      console.error('[SpotImageUploader] Upload failed:', error.message);
       // Error already handled by toast.promise
     } finally {
       setUploading(false);

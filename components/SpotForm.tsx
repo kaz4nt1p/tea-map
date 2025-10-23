@@ -20,9 +20,32 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('[SpotForm] Form submission attempt:', {
+      name: name.trim(),
+      hasImage: !!image,
+      image,
+      isUploading,
+      lat,
+      lng
+    });
+
     if (isUploading) {
+      console.warn('[SpotForm] Upload in progress, preventing submission');
       return; // Prevent submission while uploading
     }
+
+    if (!image || image.trim() === '') {
+      console.error('[SpotForm] No image URL provided');
+      return; // Don't submit without image
+    }
+
+    if (!name || name.trim() === '') {
+      console.error('[SpotForm] No name provided');
+      return; // Don't submit without name
+    }
+
+    console.log('[SpotForm] Submitting form with data:', { name, description, longDescription, image, lat, lng });
     onSubmit({ name, description, longDescription, image, lat, lng });
   };
 
@@ -138,12 +161,17 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3 pt-2">
+          {(!image || image.trim() === '') && (
+            <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+              ⚠️ Пожалуйста, загрузите фото спота перед сохранением
+            </div>
+          )}
           <motion.button
             type="submit"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex-1 bg-tea-600 hover:bg-tea-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-tea-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-            disabled={!name.trim() || isUploading}
+            disabled={!name.trim() || isUploading || !image || image.trim() === ''}
           >
             {isUploading ? '⏳ Загрузка фото...' : '✨ Добавить спот'}
           </motion.button>
