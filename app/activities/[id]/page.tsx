@@ -303,16 +303,6 @@ export default function ActivityDetailPage() {
 
           {/* Activity content */}
           <div className="p-4 sm:p-6 w-full min-w-0">
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 break-words leading-tight">
-              {activity.title}
-            </h1>
-            
-            {activity.description && (
-              <p className="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6 leading-relaxed break-words whitespace-pre-wrap overflow-wrap-anywhere">
-                {activity.description}
-              </p>
-            )}
-            
             {/* Spot info */}
             {activity.spot && (
               <button
@@ -327,6 +317,16 @@ export default function ActivityDetailPage() {
                   )}
                 </div>
               </button>
+            )}
+
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 break-words leading-tight">
+              {activity.title}
+            </h1>
+
+            {activity.description && (
+              <p className="text-sm sm:text-base text-gray-700 mb-4 sm:mb-6 leading-relaxed break-words whitespace-pre-wrap overflow-wrap-anywhere">
+                {activity.description}
+              </p>
             )}
             
             {/* Activity metadata */}

@@ -171,6 +171,13 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Spot Selection */}
+          <SpotSelector
+            selectedSpot={selectedSpot}
+            onSpotSelect={setSelectedSpot}
+            onCreateSpot={() => setShowSpotForm(true)}
+          />
+
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -228,13 +235,6 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({
               <p className="text-xs text-gray-500 mt-1">Укажите конкретное название чая, который вы пьете</p>
             )}
           </div>
-
-          {/* Spot Selection */}
-          <SpotSelector
-            selectedSpot={selectedSpot}
-            onSpotSelect={setSelectedSpot}
-            onCreateSpot={() => setShowSpotForm(true)}
-          />
 
           {/* Photo Upload */}
           <ActivityPhotoUploader
