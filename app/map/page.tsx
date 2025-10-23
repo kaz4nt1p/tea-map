@@ -149,6 +149,10 @@ function MapPageContent() {
         longitude: createData.longitude
       });
 
+      // Additional debug: log the actual request body
+      console.log('[MapPage] Full payload:', JSON.stringify(createData, null, 2));
+      console.log('[MapPage] image_url value:', createData.image_url, 'type:', typeof createData.image_url);
+
       const result = await spotsApi.createSpot(createData);
 
       console.log('[MapPage] Spot creation successful:', {

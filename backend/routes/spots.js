@@ -199,7 +199,14 @@ router.get('/:id', optionalAuth, asyncHandler(async (req, res) => {
 router.post('/', authenticateToken, validate(createSpotSchema), asyncHandler(async (req, res) => {
   const { name, description, long_description, latitude, longitude, address, amenities, accessibility_info, image_url } = req.body;
 
-  console.log('Creating spot with image_url:', image_url);
+  console.log('=====================================');
+  console.log('🔵 POST /api/spots - CREATE NEW SPOT');
+  console.log('=====================================');
+  console.log('Full request body:', JSON.stringify(req.body, null, 2));
+  console.log('Extracted image_url:', image_url);
+  console.log('image_url type:', typeof image_url);
+  console.log('image_url is empty?:', image_url === '' || image_url === undefined || image_url === null);
+  console.log('=====================================');
 
   // Create spot and handle media in a transaction
   const spot = await prisma.$transaction(async (tx) => {
