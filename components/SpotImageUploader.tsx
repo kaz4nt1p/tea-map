@@ -4,8 +4,9 @@ import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import apiClient from "../lib/api";
 
-export default function SpotImageUploader({ onUpload, multiple = false }: { 
-  onUpload: (url: string) => void; 
+export default function SpotImageUploader({ onUpload, onUploadStateChange, multiple = false }: {
+  onUpload: (url: string, thumbnailUrl?: string) => void;
+  onUploadStateChange?: (isUploading: boolean) => void;
   multiple?: boolean;
 }) {
   const [uploading, setUploading] = useState(false);
@@ -24,6 +25,8 @@ export default function SpotImageUploader({ onUpload, multiple = false }: {
     }
 
     setUploading(true);
+    onUploadStateChange?.(true);
+
     const uploadPromise = async () => {
       const formData = new FormData();
       formData.append('image', file);
@@ -35,8 +38,9 @@ export default function SpotImageUploader({ onUpload, multiple = false }: {
       });
 
       const data = response.data;
-      onUpload(data.url);
-      
+      const thumbnailUrl = data.thumbnails?.medium || data.thumbnails?.small || data.url;
+      onUpload(data.url, thumbnailUrl);
+
       // Log additional Cloudinary metadata for debugging
       if (data.thumbnails) {
         console.log('Cloudinary thumbnails available:', data.thumbnails);
@@ -44,7 +48,7 @@ export default function SpotImageUploader({ onUpload, multiple = false }: {
       if (data.publicId) {
         console.log('Cloudinary public ID:', data.publicId);
       }
-      
+
       return data;
     };
 
@@ -58,6 +62,7 @@ export default function SpotImageUploader({ onUpload, multiple = false }: {
       // Error already handled by toast.promise
     } finally {
       setUploading(false);
+      onUploadStateChange?.(false);
     }
   };
 

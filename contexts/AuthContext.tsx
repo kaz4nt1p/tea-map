@@ -252,28 +252,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async (): Promise<void> => {
     try {
       setIsLoading(true);
-      
+
       // Call logout endpoint
       await authApi.logout();
-      
+
       // Clear local authentication state
       authUtils.logout();
       setUser(null);
-      
+
       toast.success('Successfully logged out');
-      
-      // Redirect to login page
-      router.push('/auth');
+
+      // Use window.location for reliable redirect after logout
+      // This prevents race conditions with React Router state
+      window.location.href = '/auth';
     } catch (error) {
       // Even if logout API call fails, clear local state
       authUtils.logout();
       setUser(null);
-      
+
       console.error('Logout error:', error);
       toast.error('Logout completed');
-      
-      // Redirect to login page even on error
-      router.push('/auth');
+
+      // Use window.location for reliable redirect
+      window.location.href = '/auth';
     } finally {
       setIsLoading(false);
     }

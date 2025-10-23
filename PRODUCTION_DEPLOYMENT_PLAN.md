@@ -11,6 +11,7 @@
 # - No encryption for sensitive data
 # - Missing session secret randomization
 ```
+  
 
 **Action Required:**
 - Generate strong, unique secrets for production
@@ -764,442 +765,195 @@ git push --force-with-lease origin main
 
 ---
 
-## 11. Nginx + PM2 Deployment Strategy
+## Server Recovery Guide (DB + Nginx)
 
-### 11.1 Current Infrastructure Analysis
-Based on CLAUDE.md documentation, the application was previously deployed to:
-- **Production URL**: https://teamap.duckdns.org  
-- **Server**: Ubuntu 22.04 VPS (77.232.139.160)
-- **Process Manager**: PM2 with auto-restart on boot
-- **Web Server**: Nginx with SSL/TLS termination
-- **Database**: PostgreSQL with Prisma ORM
+Follow these steps to recover the production site on a single Ubuntu server that runs PostgreSQL, Node.js services, and Nginx.
 
-### 11.2 Required Configuration Files
+### 1) Connect and prepare the server
+```bash
+ssh ubuntu@<server-ip>
+sudo -s
+apt-get update -y
+apt-get install -y curl ca-certificates gnupg ufw
 
-#### PM2 Ecosystem Configuration
-Create `ecosystem.config.js`:
-```javascript
-module.exports = {
-  apps: [
-    {
-      name: 'tea-map-backend',
-      script: 'backend/server.js',
-      cwd: '/var/www/tea-map',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 3002
-      },
-      instances: 1,
-      exec_mode: 'fork',
-      watch: false,
-      max_memory_restart: '1G',
-      error_file: '/var/log/pm2/tea-map-backend-error.log',
-      out_file: '/var/log/pm2/tea-map-backend-out.log',
-      log_file: '/var/log/pm2/tea-map-backend.log',
-      merge_logs: true,
-      time: true
-    },
-    {
-      name: 'tea-map-frontend',
-      script: 'npm',
-      args: 'start',
-      cwd: '/var/www/tea-map',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 3000,
-        NEXT_PUBLIC_BACKEND_URL: 'https://teamap.duckdns.org'
-      },
-      instances: 1,
-      exec_mode: 'fork',
-      watch: false,
-      max_memory_restart: '1G',
-      error_file: '/var/log/pm2/tea-map-frontend-error.log',
-      out_file: '/var/log/pm2/tea-map-frontend-out.log',
-      log_file: '/var/log/pm2/tea-map-frontend.log',
-      merge_logs: true,
-      time: true
-    }
-  ]
-};
+# Ensure Node 18+ and PM2 or systemd are available (we use systemd below)
+node -v || curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+apt-get install -y nodejs
+
+# Ensure PostgreSQL client exists for restores
+apt-get install -y postgresql-client
 ```
 
-#### Nginx Configuration
-Create `/etc/nginx/sites-available/teamap.duckdns.org`:
-```nginx
-# Rate limiting zones
-limit_req_zone $binary_remote_addr zone=api:10m rate=100r/m;
-limit_req_zone $binary_remote_addr zone=auth:10m rate=10r/m;
+### 2) Retrieve application code and env
+```bash
+mkdir -p /opt/tea-map && cd /opt/tea-map
 
-# Upstream definitions
-upstream frontend {
-    server 127.0.0.1:3000;
-    keepalive 32;
-}
+# Option A: Git
+git clone https://github.com/<your-org>/tea-map . || git pull
 
-upstream backend {
-    server 127.0.0.1:3002;
-    keepalive 32;
-}
+# Option B: Tarball (copy from backup/CI)
+# tar -xzf tea-map-<build>.tar.gz -C /opt/tea-map --strip-components=1
 
-# HTTP to HTTPS redirect
+# Add/update production envs
+cp backend/.env.production backend/.env || true
+cp .env.production .env || true
+```
+
+### 3) Restore PostgreSQL database
+Pick ONE of the restore sources you have available.
+```bash
+# 3a) From SQL dump
+export DATABASE_URL="postgresql://<user>:<pass>@<host>:5432/tea_map_prod"
+psql "$DATABASE_URL" -c 'SELECT 1;'  # connectivity check
+pg_restore --no-owner --no-privileges -d "$DATABASE_URL" /backups/tea_map_latest.dump || \
+psql "$DATABASE_URL" -f /backups/tea_map_latest.sql
+
+# 3b) From compressed .sql.gz
+gunzip -c /backups/tea_map_latest.sql.gz | psql "$DATABASE_URL"
+
+# 3c) If DB exists but needs migrations
+cd /opt/tea-map/backend
+npm ci
+npx prisma migrate deploy
+npx prisma generate
+```
+
+### 4) Build and install app services
+```bash
+cd /opt/tea-map
+npm ci
+
+# Build frontend if applicable
+npm run build || true
+
+# Install backend deps
+cd backend && npm ci && cd ..
+```
+
+### 5) Create systemd services
+Create or update these units.
+```bash
+cat >/etc/systemd/system/tea-map-backend.service <<'UNIT'
+[Unit]
+Description=Tea Map Backend
+After=network.target
+
+[Service]
+Type=simple
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/tea-map/backend/.env
+WorkingDirectory=/opt/tea-map/backend
+ExecStart=/usr/bin/node server.js
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+cat >/etc/systemd/system/tea-map-frontend.service <<'UNIT'
+[Unit]
+Description=Tea Map Frontend (Next.js)
+After=network.target
+
+[Service]
+Type=simple
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/tea-map/.env
+WorkingDirectory=/opt/tea-map
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=5
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable tea-map-backend tea-map-frontend
+systemctl restart tea-map-backend tea-map-frontend
+systemctl status tea-map-backend --no-pager -l || true
+```
+
+### 6) Configure Nginx reverse proxy
+Adjust domains and upstream ports as needed (e.g., backend on 3002, frontend on 3000 or 3001).
+```bash
+apt-get install -y nginx
+
+cat >/etc/nginx/sites-available/tea-map.conf <<'NGINX'
+map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+
 server {
     listen 80;
-    server_name teamap.duckdns.org;
-    
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    
-    # Redirect all HTTP to HTTPS
-    return 301 https://$server_name$request_uri;
-}
+    server_name your-domain.com;
 
-# HTTPS server configuration
-server {
-    listen 443 ssl http2;
-    server_name teamap.duckdns.org;
-    
-    # SSL Configuration
-    ssl_certificate /etc/letsencrypt/live/teamap.duckdns.org/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/teamap.duckdns.org/privkey.pem;
-    
-    # SSL Security
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384;
-    ssl_prefer_server_ciphers off;
-    ssl_session_cache shared:SSL:10m;
-    ssl_session_timeout 10m;
-    
-    # Security Headers
-    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
-    add_header X-Frame-Options "SAMEORIGIN" always;
-    add_header X-Content-Type-Options "nosniff" always;
-    add_header X-XSS-Protection "1; mode=block" always;
-    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-    add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data: https:; connect-src 'self' https:; media-src 'self' blob: data:; object-src 'none'; frame-src 'none';" always;
-    
-    # Gzip compression
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 1024;
-    gzip_types text/plain text/css text/xml text/javascript application/javascript application/xml+rss application/json image/svg+xml;
-    
-    # Client limits
-    client_max_body_size 50M;
-    client_body_timeout 60s;
-    client_header_timeout 60s;
-    
-    # API routes with rate limiting
-    location ^~ /api/ {
-        # Rate limiting
-        limit_req zone=api burst=20 nodelay;
-        limit_req_status 429;
-        
-        # CORS headers for API
-        add_header Access-Control-Allow-Origin "https://teamap.duckdns.org" always;
-        add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS" always;
-        add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With" always;
-        add_header Access-Control-Allow-Credentials "true" always;
-        
-        # Handle preflight requests
-        if ($request_method = OPTIONS) {
-            add_header Access-Control-Allow-Origin "https://teamap.duckdns.org";
-            add_header Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS";
-            add_header Access-Control-Allow-Headers "Authorization, Content-Type, Accept, Origin, X-Requested-With";
-            add_header Access-Control-Allow-Credentials "true";
-            add_header Content-Length 0;
-            add_header Content-Type text/plain;
-            return 204;
-        }
-        
-        # Proxy to backend
-        proxy_pass http://backend;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-    }
-    
-    # Auth routes with stricter rate limiting
-    location ^~ /api/auth/ {
-        limit_req zone=auth burst=5 nodelay;
-        limit_req_status 429;
-        
-        # Proxy to backend with same config as API
-        proxy_pass http://backend;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-    
-    # Health check endpoint
-    location = /health {
-        proxy_pass http://backend/health;
-        access_log off;
-    }
-    
-    # Static assets with long-term caching
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        proxy_pass http://frontend;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-        add_header X-Content-Type-Options "nosniff";
-    }
-    
-    # Next.js static files
-    location /_next/static/ {
-        proxy_pass http://frontend;
-        expires 1y;
-        add_header Cache-Control "public, immutable";
-    }
-    
-    # Frontend routes
     location / {
-        proxy_pass http://frontend;
+        proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
+        proxy_set_header Connection $connection_upgrade;
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
-        
-        # Timeouts
-        proxy_connect_timeout 60s;
-        proxy_send_timeout 60s;
-        proxy_read_timeout 60s;
-        
-        # Buffer settings
-        proxy_buffering on;
-        proxy_buffer_size 4k;
-        proxy_buffers 8 4k;
     }
-    
-    # Security - Block common attack patterns
-    location ~* "(eval\()" { deny all; }
-    location ~* "(127\.0\.0\.1)" { deny all; }
-    location ~* "([a-z0-9]{2000})" { deny all; }
-    location ~* "(javascript\:)(.*)(\;)" { deny all; }
-    location ~* "(base64_encode)(.*)(\()" { deny all; }
-    location ~* "(GLOBALS|REQUEST)(=|\[|%)" { deny all; }
-    location ~* "(<|%3C).*script.*(>|%3)" { deny all; }
-    location ~ /\.(?!well-known) { deny all; }
 }
+
+server {
+    listen 80;
+    server_name api.your-domain.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:3002;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection $connection_upgrade;
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+NGINX
+
+ln -sf /etc/nginx/sites-available/tea-map.conf /etc/nginx/sites-enabled/tea-map.conf
+nginx -t && systemctl reload nginx
 ```
 
-### 11.3 Deployment Script
-Create `deploy.sh`:
+For HTTPS, obtain certificates (e.g., with certbot) and update the server blocks to listen on 443 with `ssl_certificate` lines.
+
+### 7) Firewall and process checks
 ```bash
-#!/bin/bash
+ufw allow OpenSSH
+ufw allow http
+ufw allow https
+ufw enable || true
 
-set -e
-
-echo "🍵 Tea Map Production Deployment"
-echo "================================"
-
-# Configuration
-DEPLOY_USER="www-data"
-DEPLOY_PATH="/var/www/tea-map"
-BACKUP_PATH="/var/backups/tea-map"
-LOG_FILE="/var/log/deploy.log"
-
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
-
-log() {
-    echo -e "${GREEN}[$(date +'%Y-%m-%d %H:%M:%S')]${NC} $1" | tee -a $LOG_FILE
-}
-
-error() {
-    echo -e "${RED}[$(date +'%Y-%m-%d %H:%M:%S')] ERROR:${NC} $1" | tee -a $LOG_FILE
-    exit 1
-}
-
-# Pre-deployment checks
-log "Running pre-deployment checks..."
-
-# Check if PM2 is running
-if ! pm2 status > /dev/null 2>&1; then
-    error "PM2 is not running or not installed"
-fi
-
-# Check if Nginx is running
-if ! systemctl is-active --quiet nginx; then
-    error "Nginx is not running"
-fi
-
-# Check if PostgreSQL is running
-if ! systemctl is-active --quiet postgresql; then
-    error "PostgreSQL is not running"
-fi
-
-# Backup current deployment
-log "Creating backup..."
-if [ -d "$DEPLOY_PATH" ]; then
-    sudo mkdir -p $BACKUP_PATH
-    sudo tar -czf "$BACKUP_PATH/backup-$(date +%Y%m%d-%H%M%S).tar.gz" -C $DEPLOY_PATH . || error "Backup failed"
-fi
-
-# Build applications
-log "Building applications..."
-npm run build || error "Frontend build failed"
-cd backend && npm ci --production || error "Backend dependencies installation failed"
-cd ..
-
-# Database migrations
-log "Running database migrations..."
-cd backend
-npx prisma generate || error "Prisma client generation failed"
-npx prisma migrate deploy || error "Database migration failed"
-cd ..
-
-# Deploy application files
-log "Deploying application files..."
-sudo mkdir -p $DEPLOY_PATH
-sudo cp -r . $DEPLOY_PATH/
-sudo chown -R $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH
-
-# Update environment configuration
-log "Updating environment configuration..."
-if [ -f ".env.production" ]; then
-    sudo cp .env.production $DEPLOY_PATH/.env
-    sudo cp .env.production $DEPLOY_PATH/backend/.env
-fi
-
-# Restart applications with PM2
-log "Restarting applications..."
-cd $DEPLOY_PATH
-
-# Stop existing processes
-pm2 stop ecosystem.config.js || true
-pm2 delete ecosystem.config.js || true
-
-# Start new processes
-pm2 start ecosystem.config.js || error "PM2 start failed"
-pm2 save || error "PM2 save failed"
-
-# Test deployment
-log "Testing deployment..."
-sleep 10
-
-# Test backend health
-if ! curl -f -s http://localhost:3002/health > /dev/null; then
-    error "Backend health check failed"
-fi
-
-# Test frontend
-if ! curl -f -s http://localhost:3000 > /dev/null; then
-    error "Frontend health check failed"
-fi
-
-# Reload Nginx configuration
-log "Reloading Nginx configuration..."
-sudo nginx -t || error "Nginx configuration test failed"
-sudo systemctl reload nginx || error "Nginx reload failed"
-
-# Final health check through Nginx
-log "Running final health checks..."
-sleep 5
-
-if ! curl -f -s https://teamap.duckdns.org/health > /dev/null; then
-    error "Final health check through Nginx failed"
-fi
-
-log "✅ Deployment completed successfully!"
-log "Frontend: https://teamap.duckdns.org"
-log "Backend: https://teamap.duckdns.org/api"
-log "Health: https://teamap.duckdns.org/health"
-
-# Show PM2 status
-pm2 status
+curl -I http://localhost:3000 || true
+curl -s http://localhost:3002/health || true
+curl -I http://your-domain.com || true
+curl -s https://api.your-domain.com/health || true
 ```
 
-### 11.4 Environment Setup
-
-#### Production Environment Variables
-Update `backend/.env`:
-```env
-# Database
-DATABASE_URL="postgresql://teamap_user:secure_password@localhost:5432/teamap_prod"
-
-# Security
-JWT_SECRET="generated-jwt-secret-from-setup-script"
-JWT_REFRESH_SECRET="generated-refresh-secret-from-setup-script"
-SESSION_SECRET="generated-session-secret-from-setup-script"
-
-# Server
-NODE_ENV=production
-PORT=3002
-FRONTEND_URL=https://teamap.duckdns.org
-
-# Google OAuth
-GOOGLE_CLIENT_ID="production-google-client-id"
-GOOGLE_CLIENT_SECRET="production-google-client-secret"
-GOOGLE_CALLBACK_URL="https://teamap.duckdns.org/api/auth/google/callback"
-
-# Cloudinary
-CLOUDINARY_CLOUD_NAME="production-cloud-name"
-CLOUDINARY_API_KEY="production-api-key"
-CLOUDINARY_API_SECRET="production-api-secret"
-```
-
-#### Frontend Environment Variables
-Create `.env.local`:
-```env
-NEXT_PUBLIC_BACKEND_URL=https://teamap.duckdns.org
-NODE_ENV=production
-```
-
-### 11.5 SSL Certificate Renewal
-Create automatic SSL renewal:
+### 8) Logs and troubleshooting
 ```bash
-# Add to crontab
-0 12 * * * /usr/bin/certbot renew --quiet && systemctl reload nginx
+journalctl -u tea-map-backend -f
+journalctl -u tea-map-frontend -f
+tail -n 200 /var/log/nginx/error.log
 ```
 
-### 11.6 Monitoring & Logging
-Create log rotation configuration `/etc/logrotate.d/tea-map`:
-```
-/var/log/pm2/tea-map-*.log {
-    daily
-    missingok
-    rotate 30
-    compress
-    delaycompress
-    notifempty
-    copytruncate
-}
+### 9) Rollback (quick reference)
+```bash
+# App rollback
+cd /opt/tea-map && git reset --hard <good-commit> && systemctl restart tea-map-backend tea-map-frontend
+
+# DB rollback (Prisma)
+cd /opt/tea-map/backend && npx prisma migrate rollback
 ```
 
-### 11.7 Deployment Checklist
-- [ ] **Server Setup**: Ubuntu 22.04 VPS with Nginx, PM2, PostgreSQL, Node.js
-- [ ] **SSL Certificates**: Let's Encrypt certificates configured and auto-renewal setup
-- [ ] **Environment Files**: Production environment variables configured
-- [ ] **Database**: PostgreSQL database created and migrated
-- [ ] **PM2 Configuration**: Ecosystem file configured with proper logging
-- [ ] **Nginx Configuration**: Reverse proxy with security headers and rate limiting
-- [ ] **Firewall**: UFW configured to allow only necessary ports (22, 80, 443)
-- [ ] **Monitoring**: PM2 monitoring and log rotation configured
-- [ ] **Backup**: Automated backup system for database and application files
-- [ ] **Health Checks**: Monitoring endpoints configured and tested
-
-This configuration provides a production-ready deployment with enterprise-grade security, performance optimization, and monitoring capabilities using the existing VPS infrastructure.
+### 10) Post-recovery verification
+- Backend health endpoint returns 200: `/health`
+- Frontend loads on domain and serves assets
+- DB writes/reads work (create a test entity)
+- Nginx logs show 200s/no spikes in 5xx
+- Error tracking and monitors green

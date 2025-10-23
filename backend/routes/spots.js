@@ -198,37 +198,78 @@ router.get('/:id', optionalAuth, asyncHandler(async (req, res) => {
  */
 router.post('/', authenticateToken, validate(createSpotSchema), asyncHandler(async (req, res) => {
   const { name, description, long_description, latitude, longitude, address, amenities, accessibility_info, image_url } = req.body;
-  
-  const spot = await prisma.spot.create({
-    data: {
-      creator_id: req.user.id,
-      name,
-      description: description || '',
-      long_description: long_description || '',
-      latitude,
-      longitude,
-      address: address || '',
-      amenities: amenities || [],
-      accessibility_info: accessibility_info || '',
-      image_url: '' // Legacy field - photos now use media table
-    },
-    include: {
-      creator: {
-        select: {
-          id: true,
-          username: true,
-          display_name: true,
-          avatar_url: true
+
+  console.log('Creating spot with image_url:', image_url);
+
+  // Create spot and handle media in a transaction
+  const spot = await prisma.$transaction(async (tx) => {
+    // Create the spot
+    const newSpot = await tx.spot.create({
+      data: {
+        creator_id: req.user.id,
+        name,
+        description: description || '',
+        long_description: long_description || '',
+        latitude,
+        longitude,
+        address: address || '',
+        amenities: amenities || [],
+        accessibility_info: accessibility_info || '',
+        image_url: image_url || '' // Legacy field - photos now use media table
+      }
+    });
+
+    // If image_url provided, create media entry
+    if (image_url && image_url.trim() !== '') {
+      console.log('Creating media entry for new spot:', { spot_id: newSpot.id, image_url });
+      await tx.media.create({
+        data: {
+          user_id: req.user.id,
+          spot_id: newSpot.id,
+          file_path: image_url,
+          file_type: 'image',
+          file_size: 0,
+          alt_text: `${name} photo`
         }
-      },
-      _count: {
-        select: {
-          activities: true
+      });
+      console.log('Media entry created successfully');
+    }
+
+    // Return created spot with media
+    return await tx.spot.findUnique({
+      where: { id: newSpot.id },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            username: true,
+            display_name: true,
+            avatar_url: true
+          }
+        },
+        media: {
+          select: {
+            id: true,
+            file_path: true,
+            file_type: true,
+            alt_text: true,
+            created_at: true
+          }
+        },
+        _count: {
+          select: {
+            activities: true
+          }
         }
       }
-    }
+    });
   });
-  
+
+  console.log('Spot created successfully with media:', {
+    id: spot.id,
+    mediaCount: spot.media ? spot.media.length : 0
+  });
+
   successResponse(res, { spot }, 'Spot created successfully', 201);
 }));
 

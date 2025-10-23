@@ -15,9 +15,14 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
   const [description, setDescription] = useState('');
   const [longDescription, setLongDescription] = useState('');
   const [image, setImage] = useState('');
+  const [thumbnail, setThumbnail] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isUploading) {
+      return; // Prevent submission while uploading
+    }
     onSubmit({ name, description, longDescription, image, lat, lng });
   };
 
@@ -47,19 +52,44 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
       
       <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
         <div>
-          <SpotImageUploader onUpload={setImage} />
+          <SpotImageUploader
+            onUpload={(url, thumbnailUrl) => {
+              setImage(url);
+              setThumbnail(thumbnailUrl || url);
+            }}
+            onUploadStateChange={setIsUploading}
+          />
           {image && (
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3 }}
               className="mt-3"
             >
-              <img 
-                src={image} 
-                alt="preview" 
-                className="w-full max-h-24 sm:max-h-32 object-cover rounded-xl border border-tea-200"
-              />
+              <div className="relative rounded-xl overflow-hidden border-2 border-tea-300 bg-gradient-to-br from-tea-50 to-tea-100 p-2">
+                <div className="relative rounded-lg overflow-hidden">
+                  <img
+                    src={thumbnail || image}
+                    alt="preview"
+                    className="w-full max-h-40 sm:max-h-48 object-cover rounded-lg shadow-md"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setImage('');
+                    setThumbnail('');
+                  }}
+                  className="absolute top-4 right-4 bg-white/90 hover:bg-white text-tea-700 rounded-full p-2 shadow-lg transition-all hover:scale-110"
+                  aria-label="Remove photo"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </motion.div>
           )}
         </div>
@@ -113,9 +143,9 @@ export default function SpotForm({ lat, lng, onSubmit, onCancel }: SpotFormProps
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="flex-1 bg-tea-600 hover:bg-tea-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-tea-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-            disabled={!name.trim()}
+            disabled={!name.trim() || isUploading}
           >
-            ✨ Добавить спот
+            {isUploading ? '⏳ Загрузка фото...' : '✨ Добавить спот'}
           </motion.button>
           <motion.button
             type="button"

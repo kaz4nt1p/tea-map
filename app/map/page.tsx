@@ -122,11 +122,37 @@ function MapPageContent() {
         accessibility_info: '',
         image_url: spotData.image || ''
       };
-      
-      await spotsApi.createSpot(createData);
+
+      console.log('Spot data from form:', spotData);
+      console.log('Create data being sent:', createData);
+      console.log('Image URL being sent:', createData.image_url);
+
+      const result = await spotsApi.createSpot(createData);
+      console.log('Created spot result:', result);
+      console.log('Spot image_url:', result.spot?.image_url);
+      console.log('Spot media:', result.spot?.media);
+
       await fetchSpots();
       setFormCoords(null);
-      setSelectedSpot(null);
+
+      // Auto-open the newly created spot to show the photo
+      if (result.spot) {
+        const convertedSpot = {
+          id: result.spot.id,
+          name: result.spot.name,
+          description: result.spot.description,
+          longDescription: result.spot.long_description,
+          image: result.spot.image_url || '',
+          lat: result.spot.latitude,
+          lng: result.spot.longitude,
+          created_at: result.spot.created_at,
+          creator: result.spot.creator,
+          media: result.spot.media
+        };
+        console.log('Converted spot for modal:', convertedSpot);
+        setSelectedSpot(convertedSpot);
+      }
+
       toast.success('Спот успешно добавлен!');
     } catch (error) {
       console.error('Failed to create spot:', error);

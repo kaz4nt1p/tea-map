@@ -4,8 +4,10 @@ import 'leaflet/dist/leaflet.css';
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { clsx } from 'clsx';
+import toast from 'react-hot-toast';
 import { Spot } from '../lib/spots';
 import { createSimpleTeaMarkerDataURL } from './TeaMarkerIcon';
+import LocationButton from './LocationButton';
 
 type ClientMapProps = {
   spots: Spot[];
@@ -111,11 +113,12 @@ export default function ClientMap({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const userLocationMarkerRef = useRef<any>(null);
   const onMapClickRef = useRef(onMapClick);
   const [pendingSpot, setPendingSpot] = useState<Spot | null>(null);
   const [center, setCenter] = useState<[number, number]>([DEFAULT_CENTER.lat, DEFAULT_CENTER.lng]);
   const [shouldCenter, setShouldCenter] = useState(false);
-  
+
   // Keep the ref updated with the latest callback
   useEffect(() => {
     onMapClickRef.current = onMapClick;
@@ -129,6 +132,58 @@ export default function ClientMap({
     setShouldCenter(true);
     setPendingSpot(spots[idx]);
   }
+
+  // Handle user location from GPS
+  const handleLocationFound = async (lat: number, lng: number) => {
+    if (!mapRef.current) return;
+
+    // Center map on user location
+    setCenter([lat, lng]);
+    setShouldCenter(true);
+    mapRef.current.setView([lat, lng], 15, { animate: true });
+
+    // Import leaflet dynamically
+    const leaflet = await import('leaflet');
+
+    // Remove existing user location marker if any
+    if (userLocationMarkerRef.current) {
+      userLocationMarkerRef.current.remove();
+    }
+
+    // Create a blue circle marker for user location
+    const userIcon = leaflet.divIcon({
+      className: 'user-location-marker',
+      html: `
+        <div style="
+          width: 20px;
+          height: 20px;
+          background: #3b82f6;
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+        "></div>
+      `,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    });
+
+    // Add user location marker
+    userLocationMarkerRef.current = leaflet
+      .marker([lat, lng], { icon: userIcon })
+      .addTo(mapRef.current);
+
+    // Show success toast
+    toast.success('Показано ваше местоположение', {
+      duration: 2000,
+      icon: '📍',
+    });
+  };
+
+  const handleLocationError = (error: string) => {
+    toast.error(error, {
+      duration: 4000,
+    });
+  };
 
   // Инициализация карты только один раз
   useEffect(() => {
@@ -300,6 +355,12 @@ export default function ClientMap({
             </motion.div>
           )}
         </motion.div>
+
+        {/* GPS Location Button - Outside animated container to prevent position jumping */}
+        <LocationButton
+          onLocationFound={handleLocationFound}
+          onError={handleLocationError}
+        />
       </div>
       
       <style>{`.leaflet-control-attribution { display: none !important; }`}</style>
