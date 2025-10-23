@@ -147,7 +147,7 @@ function MapPageContent() {
           lng: result.spot.longitude,
           created_at: result.spot.created_at,
           creator: result.spot.creator,
-          media: result.spot.media
+          media: (result.spot as any).media
         };
         console.log('Converted spot for modal:', convertedSpot);
         setSelectedSpot(convertedSpot);
